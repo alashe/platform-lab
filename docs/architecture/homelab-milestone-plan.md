@@ -1,182 +1,473 @@
 # Homelab Platform Engineering Milestone Plan
 
-This document is the authoritative milestone plan for the platform‑lab
-project.
+This document is the authoritative milestone plan for the `platform-lab` project.
 
 The platform demonstrates:
 
--   Infrastructure provisioning with Terraform
--   Configuration management with Ansible
--   Containerized workloads with Docker
--   Observability and monitoring
--   Backup and recovery architecture
--   Infrastructure delivery through CI/CD
+- Infrastructure provisioning with Terraform
+- Configuration management with Ansible
+- Containerized workloads with Docker
+- Observability and monitoring
+- Backup and recovery architecture
+- Infrastructure delivery through CI/CD
+
+## Repository Structure
+
+```text
+platform-lab/
+├── README.md
+├── Makefile
+│
+├── docs/
+│   ├── architecture/
+│   │   ├── platform-diagram.md
+│   │   ├── decisions.md
+│   │   └── homelab-milestone-plan.md
+│   │
+│   ├── operations/
+│   │   ├── backup-restore.md
+│   │   ├── monitoring-runbook.md
+│   │   ├── pihole-rollout.md
+│   │   ├── pihole-cutover.md
+│   │   ├── proxmox-baseline.md
+│   │   ├── utility-node.md
+│   │   └── incident-scenarios.md
+│   │
+│   ├── setup/
+│   │   ├── local-prereqs.md
+│   │   └── aws-prereqs.md
+│   │
+│   └── platform-story.md
+│
+├── terraform/
+│   ├── backend/
+│   │   └── backend-notes.md
+│   │
+│   ├── modules/
+│   │   ├── proxmox_vm/
+│   │   └── ec2_monitoring_target/
+│   │
+│   ├── environments/
+│   │   ├── homelab/
+│   │   └── aws-dev/
+│   │
+│   └── README.md
+│
+├── ansible/
+│   ├── inventories/
+│   │   ├── homelab/
+│   │   ├── aws/
+│   │   └── mixed/
+│   │
+│   ├── playbooks/
+│   │   ├── baseline.yml
+│   │   ├── docker.yml
+│   │   ├── monitoring-target.yml
+│   │   └── utility-node.yml
+│   │
+│   ├── roles/
+│   │   ├── baseline/
+│   │   ├── docker/
+│   │   ├── monitoring_target/
+│   │   └── utility_node/
+│   │
+│   ├── group_vars/
+│   ├── host_vars/
+│   ├── ansible.cfg
+│   └── README.md
+│
+├── scripts/
+│   ├── restore-check.sh
+│   ├── validate.sh
+│   └── tf-plan.sh
+│
+├── .github/
+│   └── workflows/
+│       ├── terraform.yml
+│       └── ansible-check.yml
+│
+└── .gitignore
+```
 
 ## Architectural Invariants
 
 These rules do not change unless explicitly revised:
 
--   Terraform provisions infrastructure where needed
-    -   AWS EC2
-    -   Optional Proxmox VMs
--   Ansible configures all host types
-    -   Bare‑metal utility node
-    -   Proxmox VMs
-    -   AWS EC2 instances
--   The same Ansible roles should be reusable across these targets
-    whenever possible.
+- Terraform provisions infrastructure where needed:
+  - AWS EC2
+  - Proxmox VMs
+- Ansible configures all host types:
+  - bare-metal utility node
+  - Proxmox VMs
+  - AWS EC2 instances
+- The same Ansible roles should be reusable across these targets whenever possible.
+- CI/CD remains a single infrastructure delivery pipeline for Terraform-managed environments.
 
-------------------------------------------------------------------------
+## Makefile Operational Commands
+
+Operational commands are standardized through the repository `Makefile`.
+
+Example targets:
+
+```text
+make tf-plan ENV=homelab
+make tf-apply ENV=homelab
+make tf-plan ENV=aws-dev
+make tf-apply ENV=aws-dev
+make ansible-baseline INVENTORY=ansible/inventories/homelab
+make restore-test
+```
 
 # Milestones
 
-## Milestone 0 --- Lab Blueprint and Standards
+## Milestone 0 — Lab Blueprint and Standards
 
-Objective: Establish architecture documentation, repository structure,
-and infrastructure conventions.
+### Objective
 
-Key Work - Initialize GitHub repository - Define hostnames, roles, and
-IP plan - Create architecture diagrams - Establish operational Makefile
-commands
+Establish architecture documentation, repository structure, and infrastructure conventions.
 
-Deliverables - docs/architecture/platform-diagram.md -
-docs/architecture/decisions.md - docs/setup/local-prereqs.md
+### Key Work
 
-Done - Repository structure committed - Architecture diagram completed -
-Node roles and IPs documented
+- Initialize GitHub repository
+- Implement the repository layout
+- Define hostnames, roles, and IP plan
+- Create architecture diagrams
+- Establish operational Makefile commands
 
-------------------------------------------------------------------------
+### Deliverables
 
-## Milestone 1 --- Proxmox Baseline
+- `docs/architecture/platform-diagram.md`
+- `docs/architecture/decisions.md`
+- `docs/architecture/homelab-milestone-plan.md`
+- `docs/setup/local-prereqs.md`
+- root `Makefile`
+- repository structure implemented with:
+  - `terraform/modules/proxmox_vm/`
+  - `terraform/modules/ec2_monitoring_target/`
+  - `terraform/environments/homelab/`
+  - `terraform/environments/aws-dev/`
+  - `ansible/inventories/homelab/`
+  - `ansible/inventories/aws/`
+  - `ansible/inventories/mixed/`
 
-Objective: Create a stable virtualization platform.
+### Done
 
-Key Work - Patch Proxmox hosts - Configure SSH access - Create Debian VM
-template
+- Repository structure committed
+- Architecture diagram completed
+- Node roles and IPs documented
+- Makefile operational commands functional
 
-Deliverables - docs/operations/proxmox-baseline.md
+---
 
-Done - VM template clones successfully - Hosts patched and documented
+## Milestone 1 — Proxmox Baseline (pve1 + pve2)
 
-------------------------------------------------------------------------
+### Objective
 
-## Milestone 2 --- Career‑Grade Backups
+Create a stable virtualization foundation for the homelab platform.
 
-Objective: Implement PBS → NAS → Cold‑tier backup architecture.
+### Key Work
 
-Key Work - Deploy Proxmox Backup Server - Configure scheduled VM
-backups - Replicate backups to NAS - Implement cold‑tier storage copy
+- Patch and update both Proxmox hosts
+- Configure SSH access and firewall posture
+- Create Debian 12 VM template
+- Document Proxmox host operations
 
-Deliverables - docs/operations/backup-restore.md -
-scripts/restore-check.sh
+### Deliverables
 
-Done - Successful restore test executed
+- `docs/operations/proxmox-baseline.md`
+- Debian 12 VM template
+- consistent administrative access to both hosts
 
-------------------------------------------------------------------------
+### Done
 
-## Milestone 3 --- Utility Node Foundation
+- Both Proxmox hosts patched and rebooted successfully
+- SSH key access configured
+- VM template successfully cloned
+- Proxmox baseline documented
 
-Objective: Deploy Debian utility node running Docker.
+---
 
-Key Work - Install Debian - Install Docker runtime - Prepare Ansible
-inventory
+## Milestone 2 — Career-Grade Backups (PBS → NAS → Cold Tier)
 
-Deliverables - docs/operations/utility-node.md
+### Objective
 
-Done - Docker services persist after reboot
+Implement a multi-tier backup architecture and verify recovery capability.
 
-------------------------------------------------------------------------
+### Key Work
 
-## Milestone 4 --- Pi‑hole Limited Rollout
+- Deploy Proxmox Backup Server VM
+- Configure scheduled VM backups
+- Replicate PBS datastore to NAS
+- Implement cold-tier storage copy
+- Create restore validation process
 
-Objective: Deploy DNS filtering in a controlled rollout.
+### Deliverables
 
-Key Work - Deploy Pi‑hole container - Configure volumes - Test DNS
-filtering with limited devices
+- `docs/operations/backup-restore.md`
+- `scripts/restore-check.sh`
+- `make restore-test`
+- PBS VM
+- NAS replication workflow
+- cold-tier backup copy process
 
-Deliverables - docs/operations/pihole-rollout.md
+### Done
 
-Done - DNS stable for test clients
+- Scheduled VM backups running
+- PBS datastore replicated to NAS
+- Cold storage copy created
+- Restore test verified with `make restore-test`
 
-------------------------------------------------------------------------
+---
 
-## Milestone 5 --- Monitoring Layer
+## Milestone 3 — Utility Node Foundation (Debian + Docker)
 
-Objective: Deploy Prometheus/Grafana monitoring VM.
+### Objective
 
-Key Work - Create monitoring VM - Deploy monitoring stack - Configure
-dashboards and alerts
+Deploy the utility host responsible for running platform services.
 
-Deliverables - docs/operations/monitoring-runbook.md
+### Key Work
 
-Done - Alerts validated - Monitoring VM included in backups
+- Install Debian 12 on the utility node
+- Install Docker runtime
+- Configure baseline host security
+- Prepare Ansible inventory for the utility host
 
-------------------------------------------------------------------------
+### Deliverables
 
-## Milestone 6 --- Pi‑hole Whole‑Home Cutover
+- `docs/operations/utility-node.md`
+- `ansible/inventories/homelab/`
+- utility host entry in inventory
 
-Objective: Promote Pi‑hole to primary DNS for the home network.
+### Done
 
-Key Work - Update router DHCP settings - Validate DNS resolution across
-devices
+- Utility node operational
+- Docker installed
+- Host configuration documented
+- Ansible inventory contains the utility node
 
-Deliverables - docs/operations/pihole-cutover.md
+---
 
-Done - Home network operating on Pi‑hole DNS
+## Milestone 4 — Network Service: Pi-hole Limited Rollout
 
-------------------------------------------------------------------------
+### Objective
 
-## Milestone 7 --- Ansible Automation with Vault
+Deploy Pi-hole DNS filtering in a controlled rollout.
 
-Objective: Implement configuration management using Ansible.
+### Key Work
 
-Key Work - Build Ansible roles and playbooks - Implement Ansible Vault
-secrets - Deploy services through playbooks
+- Deploy Pi-hole container
+- Configure persistent storage
+- Test DNS filtering with limited devices
+- Document rollback procedure
 
-Deliverables - ansible/playbooks/baseline.yml -
-ansible/playbooks/docker.yml - ansible/playbooks/monitoring-target.yml
+### Deliverables
 
-Done - Idempotent playbooks deploy baseline configuration
+- `docs/operations/pihole-rollout.md`
+- `ansible/roles/utility_node/`
+- deployment path from Ansible to the utility node
 
-------------------------------------------------------------------------
+### Done
 
-## Milestone 8 --- AWS Infrastructure Mirror
+- Pi-hole container stable
+- Limited client rollout successful
+- DNS behavior verified
+- Rollback procedure documented
 
-Objective: Provision AWS infrastructure using Terraform.
+---
 
-Key Work - Create Terraform modules - Deploy EC2 monitoring target - Run
-Ansible configuration on EC2
+## Milestone 5 — Monitoring Layer (Proxmox VM)
 
-Deliverables - terraform/modules/ec2_monitoring_target/ -
-terraform/backend/backend-notes.md
+### Objective
 
-Done - Infrastructure deployable with Terraform and configured via
-Ansible
+Deploy monitoring infrastructure and collect operational metrics.
 
-------------------------------------------------------------------------
+### Key Work
 
-## Milestone 9 --- CI/CD Infrastructure Delivery Pipeline
+- Provision monitoring VM on Proxmox
+- Deploy monitoring stack
+- Configure dashboards and alerts
+- Include monitoring VM in backup scope
+- Preserve restore or migration path to the other Proxmox host
 
-Objective: Deliver infrastructure changes through GitHub Actions.
+### Deliverables
 
-Key Work - Implement Terraform workflow - Validate Terraform
-configuration - Require approval before apply
+- `docs/operations/monitoring-runbook.md`
+- `ansible/roles/monitoring_target/`
+- monitoring VM deployment target on Proxmox
+- monitoring VM included in PBS backup schedule
 
-Deliverables - .github/workflows/terraform.yml -
-.github/workflows/ansible-check.yml
+### Done
 
-Done - Terraform plan and apply executed via CI pipeline
+- Grafana dashboards operational
+- Alerts configured and validated
+- Monitoring VM included in backup schedule
+- Monitoring VM restorable or recoverable on the alternate Proxmox node
 
-------------------------------------------------------------------------
+---
 
-## Milestone 10 --- Reliability Drills
+## Milestone 6 — Pi-hole Whole-Home Cutover
 
-Objective: Demonstrate operational readiness.
+### Objective
 
-Key Work - Restore VM from PBS - Simulate service outages - Document
-incident scenarios
+Promote Pi-hole to the primary DNS resolver for the home network.
 
-Deliverables - docs/operations/incident-scenarios.md -
-docs/platform-story.md
+### Key Work
 
-Done - Platform reproducible and documented
+- Configure router DHCP
+- Validate DNS resolution across devices
+- Document rollback process
+
+### Deliverables
+
+- `docs/operations/pihole-cutover.md`
+
+### Done
+
+- Router distributes Pi-hole DNS
+- Network devices appear in logs
+- DNS behavior verified
+- Rollback procedure tested
+
+---
+
+## Milestone 7 — Ansible Automation with Vault
+
+### Objective
+
+Implement configuration management and cross-target service deployment using Ansible.
+
+### Key Work
+
+- Build Ansible roles and playbooks
+- Encrypt secrets with Ansible Vault
+- Reuse the same roles across bare metal, Proxmox VMs, and AWS EC2 where appropriate
+- Support deployment of the utility stack to bare metal or a Proxmox utility mirror VM
+- Support deployment of the monitoring target workload to Proxmox VM or AWS EC2
+
+### Deliverables
+
+- `ansible/inventories/homelab/`
+- `ansible/inventories/aws/`
+- `ansible/inventories/mixed/`
+- `ansible/playbooks/baseline.yml`
+- `ansible/playbooks/docker.yml`
+- `ansible/playbooks/monitoring-target.yml`
+- `ansible/playbooks/utility-node.yml`
+- Vault secrets under `ansible/group_vars/` or inventory-specific group vars
+- `make ansible-baseline`
+
+### Done
+
+- Ansible deploys baseline configuration
+- Playbooks are idempotent
+- Secrets encrypted with Vault
+- Same Ansible roles can target bare metal, Proxmox VM, and AWS EC2 where intended
+- Utility stack deployable to bare metal or Proxmox VM by inventory/host selection
+
+---
+
+## Milestone 8 — AWS Infrastructure Mirror (Terraform)
+
+### Objective
+
+Use Terraform as the provisioning layer for AWS and Proxmox VM environments, and deploy workloads using Ansible.
+
+### Key Work
+
+- Create Terraform modules for Proxmox VM and AWS EC2 provisioning
+- Define Terraform environment configuration for `homelab` and `aws-dev`
+- Document Terraform backend strategy
+- Provision Proxmox VMs through Terraform where appropriate
+- Provision AWS EC2 infrastructure through Terraform
+- Run Ansible configuration after provisioning
+
+### Deliverables
+
+- `terraform/modules/proxmox_vm/`
+- `terraform/modules/ec2_monitoring_target/`
+- `terraform/environments/homelab/`
+- `terraform/environments/aws-dev/`
+- `terraform/backend/backend-notes.md`
+- `scripts/tf-plan.sh`
+- `make tf-plan ENV=homelab`
+- `make tf-apply ENV=homelab`
+- `make tf-plan ENV=aws-dev`
+- `make tf-apply ENV=aws-dev`
+- `docs/setup/aws-prereqs.md`
+
+### Done
+
+- Terraform provisions Proxmox VM infrastructure in `homelab`
+- Terraform provisions AWS infrastructure in `aws-dev`
+- Ansible configures provisioned hosts after infrastructure creation
+- Terraform backend strategy documented
+- Infrastructure deployable through Makefile commands for both environments
+
+---
+
+## Milestone 9 — CI/CD Infrastructure Delivery Pipeline
+
+### Objective
+
+Deliver Terraform-managed infrastructure changes through a controlled GitHub Actions pipeline.
+
+### Key Work
+
+- Implement GitHub Actions workflows
+- Validate Terraform configuration
+- Run Terraform plan for repo environments
+- Require approval before apply
+- Keep a single infrastructure delivery pipeline for Terraform-managed environments
+- Optionally run Ansible deployment after infrastructure provisioning
+
+### Deliverables
+
+- `.github/workflows/terraform.yml`
+- `.github/workflows/ansible-check.yml`
+- pipeline stages:
+  - `terraform fmt -check`
+  - `terraform validate`
+  - `terraform plan`
+  - manual approval
+  - `terraform apply`
+- pipeline logic that supports:
+  - `terraform/environments/homelab/`
+  - `terraform/environments/aws-dev/`
+
+### Done
+
+- Terraform validation runs automatically
+- Terraform plan generated in CI for the intended environment
+- Infrastructure changes require approval
+- Terraform apply executed through CI pipeline
+- Single CI/CD pipeline supports both `homelab` and `aws-dev` Terraform environments
+
+---
+
+## Milestone 10 — Reliability Drills and Platform Documentation
+
+### Objective
+
+Demonstrate operational readiness and produce an interview-ready platform project.
+
+### Key Work
+
+- Conduct operational drills
+- Validate backup and restore scenarios
+- Document troubleshooting procedures
+- Finalize architecture documentation
+
+### Deliverables
+
+- `docs/operations/backup-restore.md`
+- `docs/operations/monitoring-runbook.md`
+- `docs/operations/incident-scenarios.md`
+- `docs/platform-story.md`
+
+### Done
+
+- VM restore from PBS verified
+- Monitoring VM recovery validated
+- Pi-hole restore validated
+- Utility node failure recovery documented
+- Repository provides reproducible infrastructure and operational documentation
