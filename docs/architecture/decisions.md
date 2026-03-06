@@ -1,45 +1,89 @@
 # Architecture Decisions
 
-## ADR‑001: Virtualization Platform
+This file records architecture decisions for the platform-lab project.
 
-Decision Use Proxmox as the homelab virtualization platform.
+## ADR-001: Virtualization Platform
 
-Reason Provides VM lifecycle management and integrates with Proxmox
-Backup Server.
+**Decision**  
+Use Proxmox as the homelab virtualization platform.
 
-------------------------------------------------------------------------
+**Reason**  
+Proxmox provides VM lifecycle management and integrates with Proxmox Backup Server.
 
-## ADR‑002: Configuration Management
+---
 
-Decision Use Ansible for host configuration.
+## ADR-002: Configuration Management
 
-Reason Agentless automation that can configure bare‑metal, VM, and cloud
-hosts.
+**Decision**  
+Use Ansible for host configuration.
 
-------------------------------------------------------------------------
+**Reason**  
+Ansible is agentless and can configure bare-metal hosts, Proxmox VMs, and AWS EC2 instances using a consistent operational model.
 
-## ADR‑003: Infrastructure Provisioning
+---
 
-Decision Use Terraform for infrastructure provisioning.
+## ADR-003: Infrastructure Provisioning
 
-Scope - AWS EC2 instances - Optional Proxmox VM provisioning
+**Decision**  
+Use Terraform for infrastructure provisioning.
 
-Bare‑metal hosts are installed manually and configured via Ansible.
+**Scope**  
+Terraform provisions:
 
-------------------------------------------------------------------------
+- AWS EC2 infrastructure
+- Proxmox VMs
 
-## ADR‑004: Monitoring Stack
+Terraform does not provision bare-metal hosts in this project.
 
-Decision Use Prometheus and Grafana.
+**Reason**  
+This keeps infrastructure creation consistent across VM and cloud targets while allowing Ansible to remain the common configuration layer.
 
-Reason Widely used open‑source observability stack.
+---
 
-------------------------------------------------------------------------
+## ADR-004: Cross-Target Configuration Model
 
-## ADR‑005: Backup Architecture
+**Decision**  
+Use Ansible as the cross-target configuration and deployment layer across:
 
-Decision Use Proxmox Backup Server with NAS replication and cold
-storage.
+- bare metal
+- Proxmox VM
+- AWS EC2
 
-Reason Provides reliable VM backups and supports tested restore
-workflows.
+**Reason**  
+This preserves a single operational pattern for host configuration and service deployment, even when infrastructure is created through different mechanisms.
+
+---
+
+## ADR-005: Monitoring Stack
+
+**Decision**  
+Use Prometheus and Grafana for monitoring and observability.
+
+**Reason**  
+They provide a widely used open-source observability stack with strong support for dashboards and alerting.
+
+---
+
+## ADR-006: Backup Architecture
+
+**Decision**  
+Use Proxmox Backup Server with NAS replication and cold-tier storage.
+
+**Reason**  
+This provides reliable VM backups and supports tested restore workflows.
+
+---
+
+## ADR-007: CI/CD Scope
+
+**Decision**  
+Use a single infrastructure delivery pipeline for Terraform-managed environments.
+
+**Scope**  
+The CI/CD pipeline supports Terraform validation, planning, approval, and apply for:
+
+- `terraform/environments/homelab/`
+- `terraform/environments/aws-dev/`
+
+**Reason**  
+This keeps infrastructure delivery centralized and avoids splitting Terraform delivery into separate pipelines for Proxmox VM and AWS without a clear need.
