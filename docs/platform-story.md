@@ -1,4 +1,4 @@
-# Platform Lab Story
+# Platform Story
 
 This project demonstrates the design and operation of a small internal
 service platform built across a homelab and AWS.
@@ -10,22 +10,24 @@ service platform built across a homelab and AWS.
 -   Ansible configuration management
 -   Terraform infrastructure provisioning
 -   Prometheus and Grafana monitoring
--   Proxmox Backup Server backup architecture
+-   Proxmox Backup Server
 
 ## Platform Goals
 
 -   Demonstrate infrastructure automation
 -   Maintain parity between homelab and AWS environments
 -   Provide observable services with dashboards and alerts
--   Validate recovery procedures through restore tests
+-   Validate recovery procedures through restore testing
 
-## Operational Model
+## Deployment Model
 
-1.  Terraform provisions infrastructure.
-2.  Ansible configures hosts and deploys services.
-3.  Docker runs workloads.
-4.  Monitoring captures metrics and logs.
-5.  Backup architecture protects infrastructure.
+Terraform provisions infrastructure (AWS EC2 and optional Proxmox VMs).
 
-The platform demonstrates a realistic DevOps workflow suitable for
-interviews and portfolio review.
+Ansible configures hosts (bare metal, VM, and EC2).
+
+Docker runs service workloads.
+
+Monitoring collects metrics and alerts.
+
+Backup architecture protects infrastructure using PBS → NAS → cold
+storage.
