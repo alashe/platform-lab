@@ -144,6 +144,7 @@ Operational requirement: backups are not considered complete until a restore dri
 - Latency (p95)
 - Error rate (5xx)
 - Resource usage (CPU/memory/disk)
+- /healthz endpoint
 - Container restarts
 
 ### Pi-hole
