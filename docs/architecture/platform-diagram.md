@@ -1,3 +1,4 @@
+
 flowchart LR
   subgraph Repo["Git Repo: IaC + Config + Docs"]
     TF["Terraform: AWS provisioning"]
@@ -41,3 +42,12 @@ flowchart LR
   SG --> EC2
   VPC --> EC2
   EC2 --> CW
+
+flowchart TD
+  VM["VMs: Utility + Monitoring"] --> PBS["PBS datastore"]
+  PBS --> NAS["NAS replication/copy"]
+  NAS --> COLD["Cold storage tier"]
+  COLD -->|"restore test"| VM
+  PBS -->|"restore"| VM
+
+  
