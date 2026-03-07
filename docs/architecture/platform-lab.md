@@ -155,6 +155,7 @@ Operational requirement: backups are not considered complete until a restore dri
 
 ---
 
+```markdown
 ## Diagrams
 
 ### Platform Diagram (Homelab + AWS)
