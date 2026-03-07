@@ -20,6 +20,7 @@ platform-lab/
 │
 ├── docs/
 │   ├── architecture/
+│   │   ├── platform-lab.md
 │   │   ├── platform-diagram.md
 │   │   ├── decisions.md
 │   │   └── homelab-milestone-plan.md
