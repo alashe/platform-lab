@@ -1,3 +1,6 @@
+## Diagrams
+
+### Platform Diagram (Homelab + AWS)
 
 ```mermaid
 flowchart LR
@@ -43,7 +46,10 @@ flowchart LR
   SG --> EC2
   VPC --> EC2
   EC2 --> CW
+```
+### Backup / Restore Flow
 
+```mermaid
 flowchart TD
   VM["VMs: Utility + Monitoring"] --> PBS["PBS datastore"]
   PBS --> NAS["NAS replication/copy"]
