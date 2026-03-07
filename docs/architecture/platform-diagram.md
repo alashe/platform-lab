@@ -44,7 +44,6 @@ flowchart LR
   VPC --> EC2
   EC2 --> CW
 
-```mermaid
 flowchart TD
   VM["VMs: Utility + Monitoring"] --> PBS["PBS datastore"]
   PBS --> NAS["NAS replication/copy"]
