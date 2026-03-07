@@ -155,7 +155,7 @@ Operational requirement: backups are not considered complete until a restore dri
 
 ---
 
-```markdown
+```mermaid
 flowchart LR
   subgraph Repo[Git Repo: IaC + Config + Docs]
     TF[Terraform: AWS provisioning]
