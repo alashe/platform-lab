@@ -157,45 +157,4 @@ Operational requirement: backups are not considered complete until a restore dri
 
 ```mermaid
 flowchart LR
-  subgraph Repo[Git Repo: IaC + Config + Docs]
-    TF[Terraform: AWS provisioning]
-    ANS[Ansible: baseline + deploy]
-    DC[Docker Compose: service defs]
-    DOC[Docs: diagram + runbooks + game days]
-  end
-
-  subgraph Proxmox[Homelab: Proxmox Cluster (7550 + 7560)]
-    UVM[Utility VM (Debian)\nDocker: Pi-hole + Target Service]
-    MVM[Monitoring VM (Debian)\nPrometheus + Grafana + Alertmanager\n(+ Loki optional)]
-    PBS[PBS VM\nProxmox Backup Server]
-  end
-
-  subgraph Storage[Backup Tiers]
-    NAS[NAS Tier]
-    COLD[Cold Tier (DS207 / offline)]
-  end
-
-  subgraph AWS[AWS (Terraform-managed)]
-    VPC[VPC + Subnet]
-    SG[Security Group]
-    EC2[EC2 Instance\nDocker: Target Service]
-    CW[CloudWatch (optional)\nlogs/metrics]
-  end
-
-  TF --> AWS
-  ANS --> UVM
-  ANS --> MVM
-  ANS --> EC2
-  DC --> UVM
-  DC --> EC2
-
-  UVM --> MVM
-  EC2 --> MVM
-
-  UVM --> PBS
-  MVM --> PBS
-  PBS --> NAS --> COLD
-
-  SG --> EC2
-  VPC --> EC2
-  EC2 --> CW
+  A[Hello] --> B[World]
