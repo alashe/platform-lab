@@ -240,14 +240,54 @@ Deploy the utility host responsible for running platform services.
 
 ### Done
 
-- Utility node operational
 - Docker installed
+- Utility node boots reliably
+- Docker services persist through reboot
 - Host configuration documented
 - Ansible inventory contains the utility node
+- Homelab Vault file exists and is encrypted
 
 ---
 
-## Milestone 4 — Network Service: Pi-hole Limited Rollout
+## Milestone 4 — Terraform Foundations
+
+### Objective
+
+Use Terraform as the provisioning layer for Proxmox VM environments
+
+### Key Work
+
+- Set up Terraform for homelab VM provisioning
+- Define provider and version constraints
+- Create Terraform structure for local VM builds
+- Provision the next homelab VM(s) through Terraform instead of manual creation
+- Document local workflow for `terraform fmt`, `terraform validate`, `terraform plan`, `terraform apply`, and `terraform destroy`
+
+### Deliverables
+
+Terraform structure:
+
+    terraform/
+    ├── modules/
+    ├── environments/
+    │   └── homelab/
+    └── README.md
+
+Documentation:
+
+- `docs/setup/terraform-prereqs.md`
+- `docs/operations/homelab-vm-provisioning.md`
+
+### Done
+
+- Terraform runs cleanly from the repo
+- provider and homelab environment scaffolding are in place
+- at least one homelab VM is provisioned through Terraform
+- basic apply / destroy workflow is documented
+  
+---
+
+## Milestone 5 — Network Service: Pi-hole Limited Rollout
 
 ### Objective
 
@@ -275,7 +315,7 @@ Deploy Pi-hole DNS filtering in a controlled rollout.
 
 ---
 
-## Milestone 5 — Monitoring Layer (Proxmox VM)
+## Milestone 6 — Monitoring Layer (Proxmox VM)
 
 ### Objective
 
@@ -305,7 +345,7 @@ Deploy monitoring infrastructure and collect operational metrics.
 
 ---
 
-## Milestone 6 — Pi-hole Whole-Home Cutover
+## Milestone 7 — Pi-hole Whole-Home Cutover
 
 ### Objective
 
@@ -330,11 +370,11 @@ Promote Pi-hole to the primary DNS resolver for the home network.
 
 ---
 
-## Milestone 7 — Ansible Automation with Vault
+## Milestone 8 — Ansible Automation with Vault
 
 ### Objective
 
-Implement configuration management and cross-target service deployment using Ansible.
+Implement configuration management and cross-target service deployment using Ansible. 
 
 ### Key Work
 
@@ -366,11 +406,11 @@ Implement configuration management and cross-target service deployment using Ans
 
 ---
 
-## Milestone 8 — AWS Infrastructure Mirror (Terraform)
+## Milestone 9 — AWS Infrastructure Mirror (Terraform)
 
 ### Objective
 
-Use Terraform as the provisioning layer for AWS and Proxmox VM environments, and deploy workloads using Ansible.
+Use Terraform as the provisioning layer for AWS environment, and deploy workloads using Ansible.
 
 ### Key Work
 
@@ -405,7 +445,7 @@ Use Terraform as the provisioning layer for AWS and Proxmox VM environments, and
 
 ---
 
-## Milestone 9 — CI/CD Infrastructure Delivery Pipeline
+## Milestone 10 — CI/CD Infrastructure Delivery Pipeline
 
 ### Objective
 
@@ -444,7 +484,7 @@ Deliver Terraform-managed infrastructure changes through a controlled GitHub Act
 
 ---
 
-## Milestone 10 — Reliability Drills and Platform Documentation
+## Milestone 11 — Reliability Drills and Platform Documentation
 
 ### Objective
 
