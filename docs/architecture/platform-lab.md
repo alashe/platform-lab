@@ -1,157 +1,300 @@
-# Platform Lab Architecture (Homelab + AWS)
+# Platform Architecture
 
-## Purpose
+## Overview
 
-This lab is a career-grade platform/CloudOps project designed to demonstrate:
+This platform runs a small service workload across two environments — a local Proxmox cluster and AWS — with unified configuration management, observability, and a tiered backup strategy.
 
-- Linux administration and Bash workflow
-- Docker-based service operations (no Kubernetes)
-- Ansible configuration management and compliance
-- Terraform infrastructure provisioning (AWS EC2-focused)
-- Monitoring/observability (metrics, dashboards, alerts; logs optional)
-- Backup and recovery architecture with tested restores
-
-The platform runs a small set of internal services locally on Proxmox and mirrors a target workload on AWS to demonstrate operational parity between homelab and cloud.
+The design principle is **operational realism over complexity**: every layer exists because it solves a real operational problem, not to demonstrate a tool.
 
 ---
 
 ## Goals and Non-Goals
 
 ### Goals
-- Operate real services with uptime expectations and measurable signals.
-- Use a consistent automation flow across environments:
-  - **Terraform → Ansible → Docker → Monitoring → Operations**
-- Ensure the monitoring layer is independent of the service host.
-- Implement backups with documented restore procedures and periodic restore drills.
-- Produce documentation suitable for interview narratives (architecture, runbooks, incident notes).
 
-### Non-Goals (for this phase)
+- Operate real services with uptime expectations and measurable signals
+- Use a consistent automation flow across environments: **Terraform → Ansible → Docker → Monitoring → Operations**
+- Keep the monitoring layer independent of the service host
+- Implement backups with documented restore procedures and periodic restore drills
+- Produce documentation suitable for interview narratives — architecture, runbooks, incident notes
+
+### Non-Goals (this phase)
+
 - Kubernetes
-- Complex HA/cluster orchestration
+- Complex HA or cluster orchestration
 - Multi-region AWS design
-- Full zero-trust networking or hybrid VPN mesh (can be Phase 2)
+- Full zero-trust networking or hybrid VPN mesh
 
 ---
 
-## System Overview
+## Environment Map
 
-### Local Platform (Proxmox)
-Two Proxmox hosts provide compute for dedicated VMs:
+### Local — Proxmox Cluster
 
-- **Utility VM (Debian + Docker)**
-  - Pi-hole (network DNS filtering)
-  - Monitoring target service (nginx or small API)
+**Physical nodes:**
 
-- **Monitoring VM (Debian)**
-  - Prometheus (metrics)
-  - Grafana (dashboards)
-  - Alertmanager (alerts)
-  - Optional: Loki + promtail/agent (logs)
+| Node | Hardware | Role |
+|---|---|---|
+| pve1 | Dell Precision 7550 | Primary compute |
+| pve2 | Dell Precision 7560 | Secondary compute |
+| qdevice | HP Elitedesk 800 mini | Corosync QDevice · bare-metal utility node |
 
-- **Proxmox Backup Server VM (PBS)**
-  - Backs up Utility VM and Monitoring VM
-  - Syncs/copies backups to NAS and cold tier
+**Network infrastructure:**
 
-**Separation requirement:** Monitoring is independent of the Utility VM so service failures do not remove visibility/alerting.
+| Device | Role |
+|---|---|
+| Router | Gateway and DHCP server |
+| Managed 2.5GbE switch | Connects router to lab nodes; enables 2.5GbE connectivity to the NAS; supports VLANs and LACP |
 
-**Mobility requirement:** Monitoring VM must be restorable/migratable between Proxmox hosts (PBS-backed restore is sufficient for this phase).
+**Storage:**
+
+| Device | OS / Filesystem | Role |
+|---|---|---|
+| NAS — Terramaster F4-424 Pro | TrueNAS Scale · ZFS | Primary storage; PBS datastore via NFS share; personal data (documents, photos, music) |
+| DS212 | — | Warm local PBS datastore copy; nightly rsync from NAS; separate physical device |
+
+**NAS storage:**
+
+| Pool | Drives | Capacity | Status |
+|---|---|---|---|
+| Data pool | 3x 8TB HDD | RAIDZ1 — ~16TB usable | Drives purchased — pool pending creation |
+
+> TrueNAS OS boots from a dedicated 1TB SSD (boot drive only). The data pool is independent of the OS drive. See ADR-016.
+
+**Developer workstation:**
+
+| Machine | OS | Role |
+|---|---|---|
+| Fedora workstation | Fedora Linux | Local Ansible + Terraform development — not cluster-managed |
+
+> The Fedora workstation is used for writing and testing code locally before pushing. It is not in the Ansible inventory and is not managed by the platform.
+
+**VMs on cluster:**
+
+| VM | Node | Purpose | Services |
+|---|---|---|---|
+| Utility VM | pve1 | Primary service runtime | Docker · Pi-hole · nginx target |
+| Monitoring VM | pve2 | Observability — independent failure domain | Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
+| PBS VM | pve1 | Backup server | Proxmox Backup Server |
+| Automation VM | pve2 | Ansible + Terraform execution | Ansible controller · Terraform workspace |
+
+> Node assignments are recommended defaults, adjusted based on resource availability at build time. **Exception: PBS VM on pve1 is confirmed** — its datastore is hosted on the NAS via NFS, so migrating the PBS VM to pve2 requires no datastore changes.
+
+**HP Elitedesk 800 mini — bare-metal roles:**
+
+| Role | Details |
+|---|---|
+| Corosync QDevice | Provides quorum tie-breaker vote for the 2-node cluster |
+| Bare-metal utility node | Docker · Pi-hole (secondary DNS) · nginx target — mirrors Utility VM |
+
+> The EliteDesk is managed by the same Ansible roles as the Utility VM, demonstrating role portability across bare metal and VMs. Pi-hole on the EliteDesk is activated as secondary DNS during the whole-home cutover (Milestone 8), after the Utility VM is established as primary.
+
+**Separation requirement:** The Monitoring VM runs on pve2, independent of the Utility VM on pve1, so service failures do not remove visibility or alerting.
+
+**Mobility requirement:** The Monitoring VM must be restorable or migratable between Proxmox hosts. PBS-backed restore is sufficient for this phase.
 
 ---
 
-### AWS Platform (Terraform-managed)
-AWS resources are provisioned using Terraform:
+### AWS — Terraform-Provisioned
 
-- VPC + subnet(s) (minimal architecture acceptable for a lab)
-- Security Group(s)
-- EC2 instance running Docker
-- Optional: CloudWatch for logs/metrics
+```
+VPC (10.0.0.0/16)
+└── Public subnet
+    ├── Security Group     SSH · HTTP · Node Exporter port
+    ├── EC2 (t3.micro)     Debian AMI · Docker runtime
+    │   ├── nginx          monitoring target (mirrors homelab)
+    │   └── node_exporter  scraped by homelab Prometheus
+    └── IAM instance profile   least-privilege · CloudWatch write
+```
 
-The AWS EC2 instance runs the same monitoring target service as the homelab (same container image and deployment pattern) to demonstrate workload parity.
+Terraform state is stored in S3 with locking via DynamoDB.  
+Ansible runs the identical baseline playbook against EC2 as it does locally.
 
 ---
 
 ## Functional Services
 
-### 1) Network Service: Pi-hole (Docker)
+### 1 — Network Service: Pi-hole
+
 Role: primary DNS filtering for the home network.
+
+**Deployment model:**
+
+| Instance | Host | Role | Activated |
+|---|---|---|---|
+| Primary | Utility VM (pve1) | Active DNS for whole network | Milestone 8 cutover |
+| Secondary | HP Elitedesk 800 mini | Failover DNS | Milestone 8 cutover |
+
+Router DHCP distributes both IPs: Utility VM as primary, EliteDesk as secondary. Devices fail over automatically if the Utility VM is unreachable.
 
 Operational expectations:
 - DNS availability and stable performance
-- Visibility into query volume, block rate, upstream latency
-- Config managed via Ansible (container runtime + host baseline)
+- Config managed via Ansible — same role applied to both hosts
+- Visibility into query volume, block rate, and upstream latency
 
-### 2) Monitoring Target Service (Docker)
-Role: simple service used to generate metrics/logs and practice operations.
+### 2 — Monitoring Target Service
 
-Runs in:
-- Homelab Utility VM (Docker)
-- AWS EC2 instance (Docker)
+Role: a simple containerized service used to generate metrics and logs and practice operations.
+
+Runs identically across environments:
+
+| Attribute | Homelab (Utility VM) | Homelab (EliteDesk) | AWS EC2 |
+|---|---|---|---|
+| Runtime | Docker Compose | Docker Compose | Docker Compose |
+| Config source | Ansible role | Same Ansible role | Same Ansible role |
+| Metrics | node_exporter | node_exporter | node_exporter → homelab Prometheus |
+| Logs | Promtail → Loki | Promtail → Loki | CloudWatch agent |
+| Restart policy | `unless-stopped` | `unless-stopped` | `unless-stopped` |
 
 Operational expectations:
-- Health endpoint (`/healthz`)
-- Basic metrics (request rate, latency, errors) and logs
+- Health endpoint at `/healthz`
+- Basic metrics: request rate, latency, error rate
 - Alerting on availability and error rate
 
-### 3) Configuration Compliance (Ansible)
-Ansible enforces baseline configuration across hosts/VMs:
+### 3 — Configuration Compliance
 
-- SSH configuration and hardening
-- Packages and updates policy (defined scope)
-- Docker runtime installation and configuration
-- Firewall rules
-- User accounts and permissions
-- Service deployment (compose + systemd integration where appropriate)
+Ansible enforces baseline configuration across all managed hosts:
 
-Compliance is validated by re-running playbooks to correct drift.
+| Area | What is enforced |
+|---|---|
+| SSH | `PasswordAuthentication no` · `PermitRootLogin no` · idle timeout |
+| Packages | curl · vim · ufw · fail2ban · unattended-upgrades |
+| Docker | CE runtime · Compose plugin · user group membership |
+| Firewall | ufw default deny · allow only required ports |
+| Users | `ops` user with sudo · authorized keys deployed |
+
+Managed hosts: Utility VM, Monitoring VM, PBS VM, Automation VM, HP EliteDesk (bare metal), AWS EC2.  
+The Fedora workstation is not managed by Ansible.
+
+Compliance is validated by re-running playbooks in check mode to detect drift.
+
+---
+
+## Observability Stack
+
+Hosted on the Monitoring VM (pve2). Scrapes all managed hosts and EC2.
+
+| Component | Role |
+|---|---|
+| Prometheus | Metrics collection and alerting rules |
+| Grafana | Dashboards and visualization |
+| Alertmanager | Alert routing and notification |
+| Loki | Log aggregation |
+| Uptime Kuma | Endpoint availability monitoring and status page |
+| Promtail | Log shipping agent (all local hosts) |
+
+```
+Targets                     Collection               Storage / UI
+─────────────────────────────────────────────────────────────────
+All hosts (node_exporter) → Prometheus           → Grafana dashboards
+Containers (cAdvisor)     → Prometheus           → Alertmanager → alerts
+Pi-hole (FTL exporter)    → Prometheus
+Container stdout          → Promtail             → Loki → Grafana (Explore)
+EC2 syslog                → CloudWatch
+HTTP endpoints            → Uptime Kuma          → Status page · alerts
+```
+
+**Uptime Kuma monitors:**
+- nginx target — Utility VM (`/healthz`)
+- nginx target — EliteDesk (`/healthz`)
+- nginx target — AWS EC2 (`/healthz`)
+- Pi-hole DNS endpoint — Utility VM
+- Pi-hole DNS endpoint — EliteDesk
+- Grafana availability
+- External DNS — upstream resolution check
+
+### Observability Signals — Monitoring Target Service
+
+| Signal | Source |
+|---|---|
+| Availability (up/down) | Uptime Kuma |
+| Request rate (RPS) | Prometheus |
+| Latency (p95) | Prometheus |
+| Error rate (5xx) | Prometheus + Alert |
+| CPU / memory / disk usage | Prometheus |
+| `/healthz` endpoint | Uptime Kuma probe |
+| Container restart count | Prometheus + Alert |
+
+### Observability Signals — Pi-hole
+
+| Signal | Source |
+|---|---|
+| DNS availability | Uptime Kuma |
+| Query rate | Prometheus |
+| Blocked vs. allowed ratio | Prometheus |
+| Upstream response latency | Prometheus |
+| Container / VM resource usage | Prometheus |
+
+### Dashboards
+
+- Node health (all environments)
+- Container resource usage
+- Pi-hole DNS analytics
+- Cross-environment service status
+- Uptime Kuma status page
 
 ---
 
 ## Automation Flow
 
-1. **Terraform**
-   - Provisions AWS infrastructure (VPC/SG/EC2, optional CloudWatch)
-2. **Ansible**
-   - Applies baseline configuration and deploys services
-3. **Docker**
-   - Runs Pi-hole and the monitoring target service
-4. **Monitoring**
-   - Collects metrics (and logs if enabled), produces dashboards and alerts
-5. **Operations**
-   - Runbooks + game days validate troubleshooting and recovery procedures
+```
+1. Terraform         provision infrastructure via Automation VM or CI pipeline
+        ↓
+2. Ansible           baseline.yml  → SSH config · packages · firewall · users
+                     docker.yml    → Docker runtime + Compose
+                     monitoring-target.yml → deploy nginx container
+        ↓
+3. Prometheus        auto-discovers new node_exporter endpoint
+   Uptime Kuma       endpoint check configured for new target
+        ↓
+4. Grafana           new host appears in dashboards within one scrape interval
+```
+
+From `terraform apply` to a monitored, compliant host: under 15 minutes.
 
 ---
 
-## Backup and Recovery
+## Backup Architecture
 
-Backup tiers:
+```
+VM snapshots (Proxmox schedule)
+        ↓
+Proxmox Backup Server (PBS VM · pve1)
+        ↓
+NAS  (warm storage · local)
+  RAIDZ1 HDD pool — 3x 8TB (~16TB usable)
+        ↓
+Cold tier  (offsite / S3 Glacier)
+```
 
-1. **VM backups**
-   - Utility VM + Monitoring VM backed up to PBS
-2. **PBS → NAS**
-   - PBS datastore synced/copied to NAS
-3. **NAS → Cold tier**
-   - Periodic copy/replication to cold storage (offline or secondary NAS)
+**Operational requirement:** Backups are not considered complete until a restore drill is performed and documented.
 
-Operational requirement: backups are not considered complete until a restore drill is performed and documented.
+**Recovery targets:**
 
----
+| Metric | Target |
+|---|---|
+| RTO | < 30 minutes (full VM restore from PBS) |
+| RPO | 24 hours (daily snapshots) |
 
-## Observability Signals (Minimum)
+**Configuration recovery:**
 
-### Monitoring target service
-- Availability (up/down)
-- Request rate (RPS)
-- Latency (p95)
-- Error rate (5xx)
-- Resource usage (CPU/memory/disk)
-- /healthz endpoint
-- Container restarts
-
-### Pi-hole
-- Query rate
-- Blocked vs allowed
-- Upstream response latency
-- Container/VM resource usage
-- DNS availability
+| Asset | Backup method |
+|---|---|
+| Ansible playbooks / roles | Git repository |
+| Terraform modules + state | Git + S3 backend |
+| Grafana dashboards | JSON exports in repo |
+| Uptime Kuma config | Exported JSON in repo |
 
 ---
+
+## Related Docs
+
+- [Architecture decisions](decisions.md)
+- [Naming convention](naming-convention.md)
+- [Access control](access-control.md)
+- [Hardening baseline](hardening-baseline.md)
+- [Milestone plan](homelab-milestone-plan.md)
+- [Terraform reference](../../terraform/README.md)
+- [Ansible reference](../../ansible/README.md)
+- [Monitoring runbook](../operations/monitoring-runbook.md)
+- [Backup & restore](../operations/backup-restore.md)

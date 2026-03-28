@@ -1,62 +1,185 @@
-## Diagrams
+# Platform Diagrams
 
-### Platform Diagram (Homelab + AWS)
+---
 
-```mermaid
-flowchart LR
-  subgraph Repo["Git Repo: IaC + Config + Docs"]
-    TF["Terraform: AWS provisioning"]
-    ANS["Ansible: baseline + deploy"]
-    DC["Docker Compose: service defs"]
-    DOC["Docs: diagram + runbooks + game days"]
-  end
-
-  subgraph Proxmox["Homelab: Proxmox Cluster (7550 + 7560)"]
-    UVM["Utility VM (Debian)<br/>Docker: Pi-hole + Target Service"]
-    MVM["Monitoring VM (Debian)<br/>Prometheus + Grafana + Alertmanager<br/>(Loki optional)"]
-    PBS["PBS VM<br/>Proxmox Backup Server"]
-  end
-
-  subgraph Storage["Backup Tiers"]
-    NAS["NAS Tier"]
-    COLD["Cold Tier (DS207 / offline)"]
-  end
-
-  subgraph AWS["AWS (Terraform-managed)"]
-    VPC["VPC + Subnet"]
-    SG["Security Group"]
-    EC2["EC2 Instance<br/>Docker: Target Service"]
-    CW["CloudWatch (optional)<br/>logs/metrics"]
-  end
-
-  TF --> AWS
-  ANS --> UVM
-  ANS --> MVM
-  ANS --> EC2
-  DC --> UVM
-  DC --> EC2
-
-  UVM --> MVM
-  EC2 --> MVM
-
-  UVM --> PBS
-  MVM --> PBS
-  PBS --> NAS --> COLD
-
-  SG --> EC2
-  VPC --> EC2
-  EC2 --> CW
-```
-
-
-### Backup / Restore Flow
+## Platform Architecture
 
 ```mermaid
 flowchart TD
-  VM["VMs: Utility + Monitoring"] --> PBS["PBS datastore"]
-  PBS --> NAS["NAS replication/copy"]
-  NAS --> COLD["Cold storage tier"]
-  COLD -->|"restore test"| VM
-  PBS -->|"restore"| VM
+  subgraph Dev["Development"]
+    FED["Fedora Workstation\nAnsible + Terraform dev\nnot cluster-managed"]
+    GIT["Git Repository\nplatform-lab"]
+  end
 
-  
+  subgraph Proxmox["Homelab — Proxmox Cluster (pve1 · pve2)"]
+    subgraph pve1["pve1 — Dell Precision 7550"]
+      UVM["Utility VM\nDocker: Pi-hole · nginx target"]
+      PBS["PBS VM\nProxmox Backup Server"]
+    end
+    subgraph pve2["pve2 — Dell Precision 7560"]
+      MVM["Monitoring VM\nPrometheus · Grafana · Alertmanager\nLoki · Uptime Kuma"]
+      AVM["Automation VM\nAnsible execution\nTerraform workspace"]
+    end
+  end
+
+  subgraph EliteDesk["HP Elitedesk 800 mini (bare metal)"]
+    QD["Corosync QDevice\nquorum tie-breaker"]
+    BM["Docker: Pi-hole (secondary DNS)\nnginx target\nAnsible-managed"]
+  end
+
+  subgraph Storage["Backup Tiers"]
+    NAS["NAS\nwarm storage"]
+    COLD["Cold Tier\noffsite / S3 Glacier"]
+  end
+
+  subgraph AWS["AWS — Terraform-managed"]
+    VPC["VPC + Security Group"]
+    EC2["EC2 Instance (t3.micro)\nDocker: nginx target · node_exporter"]
+    CW["CloudWatch\nlogs"]
+  end
+
+  FED -->|"push"| GIT
+  GIT -->|"pull / trigger"| AVM
+  AVM -->|"ansible-playbook"| UVM
+  AVM -->|"ansible-playbook"| MVM
+  AVM -->|"ansible-playbook"| BM
+  AVM -->|"ansible-playbook"| EC2
+  AVM -->|"terraform apply"| VPC
+
+  MVM -->|"scrapes metrics"| UVM
+  MVM -->|"scrapes metrics"| BM
+  MVM -->|"scrapes metrics"| EC2
+  MVM -->|"endpoint checks"| UVM
+  MVM -->|"endpoint checks"| BM
+  MVM -->|"endpoint checks"| EC2
+
+  EC2 --> CW
+  VPC --> EC2
+
+  UVM --> PBS
+  MVM --> PBS
+  AVM --> PBS
+  PBS --> NAS --> COLD
+
+  QD -.->|"quorum vote"| pve1
+  QD -.->|"quorum vote"| pve2
+```
+
+---
+
+## Automation Flow
+
+```mermaid
+flowchart LR
+  DEV["Fedora Workstation\ndevelop + push"]
+  GIT["Git / CI"]
+  AVM["Automation VM\nexecute"]
+  TF["Terraform\nprovision infrastructure"]
+  ANS["Ansible\nconfigure hosts + deploy"]
+  DOCK["Docker\nrun workloads"]
+  MON["Monitoring\nPrometheus · Uptime Kuma\nGrafana · Loki"]
+  OPS["Operations\nrunbooks · drills"]
+
+  DEV --> GIT --> AVM
+  AVM --> TF --> ANS --> DOCK --> MON --> OPS
+```
+
+---
+
+## Pi-hole DNS Failover
+
+```mermaid
+flowchart LR
+  subgraph Network["Home Network — Router DHCP"]
+    R["TP-Link AX1500\nDHCP: primary · secondary DNS"]
+  end
+
+  subgraph Primary["Primary DNS"]
+    UVM["Utility VM\nPi-hole\npve1"]
+  end
+
+  subgraph Secondary["Secondary DNS (failover)"]
+    ED["HP EliteDesk\nPi-hole\nbare metal"]
+  end
+
+  R -->|"primary"| UVM
+  R -->|"secondary / failover"| ED
+```
+
+> Both instances are deployed via the same Ansible role. The EliteDesk instance is activated as secondary DNS during the whole-home cutover (Milestone 8).
+
+---
+
+## Observability Layer
+
+```mermaid
+flowchart LR
+  subgraph Targets["Monitored Targets"]
+    UVM["Utility VM\nnginx · Pi-hole"]
+    ED["EliteDesk\nnginx · Pi-hole"]
+    EC2["AWS EC2\nnginx target"]
+    EXT["External\nDNS upstream"]
+  end
+
+  subgraph Stack["Monitoring VM (pve2)"]
+    PROM["Prometheus\nmetrics + rules"]
+    UK["Uptime Kuma\nendpoint checks"]
+    LOKI["Loki\nlogs"]
+    AM["Alertmanager\nalert routing"]
+    GRAF["Grafana\ndashboards"]
+  end
+
+  UVM -->|"node_exporter · cAdvisor · FTL"| PROM
+  ED -->|"node_exporter · FTL"| PROM
+  EC2 -->|"node_exporter"| PROM
+  UVM -->|"Promtail"| LOKI
+  ED -->|"Promtail"| LOKI
+  EC2 -->|"CloudWatch"| LOKI
+
+  UK -->|"HTTP · DNS probes"| UVM
+  UK -->|"HTTP · DNS probes"| ED
+  UK -->|"HTTP probes"| EC2
+  UK -->|"DNS check"| EXT
+
+  PROM --> AM
+  PROM --> GRAF
+  UK --> GRAF
+  LOKI --> GRAF
+```
+
+---
+
+## Backup and Recovery
+
+```mermaid
+flowchart TD
+  VMs["VMs: Utility · Monitoring · Automation"]
+  PBS["Proxmox Backup Server\npve1"]
+  NAS["NAS\nwarm storage"]
+  COLD["Cold Tier\noffsite / S3 Glacier"]
+
+  VMs -->|"scheduled snapshot"| PBS
+  PBS -->|"datastore sync"| NAS
+  NAS -->|"periodic copy"| COLD
+
+  PBS -->|"restore"| VMs
+  COLD -->|"restore drill"| VMs
+```
+
+---
+
+## CI/CD Pipeline
+
+```mermaid
+flowchart LR
+  PR["Pull Request"]
+  FMT["terraform fmt -check"]
+  VAL["terraform validate"]
+  PLAN["terraform plan"]
+  APPROVE["Manual Approval"]
+  APPLY["terraform apply"]
+  SYNTAX["ansible --syntax-check"]
+
+  PR --> FMT --> VAL --> PLAN --> APPROVE --> APPLY
+  PR --> SYNTAX
+```
