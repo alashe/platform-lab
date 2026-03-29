@@ -125,7 +125,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | win-11-pro VM disk backed up before reinstall | 🔲 | Valid Windows license — preserve virtual hardware config on restore to avoid deactivation; use Proxmox `.vma` backup |
-| ubuntu-server VM — decide keep or rebuild | 🔲 | If keeping, back up before reinstall; if rebuilding from scratch, no action needed |
+| ubuntu-server VM — back up before reinstall | 🔲 | Keeping — back up via Proxmox `.vma` backup before reinstall |
 | `ala-pve01` renamed to `pve01` in Proxmox | 🔲 | Fresh install with correct hostname — must complete VM backups above first |
 | `pve01` static IP set to `192.168.0.51` | 🔲 | Changed from `.50`; matches sequence convention (`pve01=.51`) |
 | Both Proxmox hosts patched and rebooted | 🔲 | |
@@ -150,7 +150,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | 3x 8TB HDDs purchased | ✅ | 2026-03-28 — RAIDZ1 pool (see ADR-016) |
 | TrueNAS Scale ISO downloaded and boot media prepared | ✅ | Loaded on Ventoy USB |
-| TrueNAS Scale installed to boot SSD (1TB P310) | 🔲 | OS drive — separate from data pool |
+| TrueNAS Scale installed to mirrored boot pool (2x 1TB P310) | 🔲 | Mirrored boot pool — see ADR-020 |
 | Network config complete — static IP, accessible on LAN | 🔲 | |
 | Dataset hierarchy designed and documented in `decisions.md` | 🔲 | Design before creating — ZFS hierarchy is hard to refactor with data present |
 | RAIDZ1 pool created with 3x 8TB HDDs | 🔲 | ~16TB usable; see ADR-016 |

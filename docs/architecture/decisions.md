@@ -299,3 +299,14 @@ Internal admin UIs (Proxmox, TrueNAS, PBS, Grafana) are single-operator, LAN-onl
 - Once root is trusted on client devices, all internally issued certs are trusted automatically
 
 **Rejected:** Purchasing public TLS certs for internal hostnames (unnecessary cost and complexity for `.lab` domain); leaving all services on self-signed certs permanently (unacceptable for Nextcloud and other app01 services).
+
+---
+
+## ADR-020 — TrueNAS boot pool mirrored across two P310 SSDs
+
+**Decision:** Use both 1TB P310 SSDs as a ZFS mirror for the TrueNAS boot pool.
+
+**Reasoning:**
+A second P310 was originally purchased as temporary data storage before the 3x 8TB HDDs were committed to. With the data pool now planned as RAIDZ1 on HDDs, the second P310 has no role in the data pool. Mirroring the boot pool is the correct use — it costs nothing extra and protects against OS drive failure without requiring a reinstall.
+
+**Rejected:** Using the second P310 as a separate data volume or cache device — unnecessary given the RAIDZ1 data pool covers all storage requirements.

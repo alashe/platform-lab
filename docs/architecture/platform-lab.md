@@ -56,9 +56,10 @@ The design principle is **operational realism over complexity**: every layer exi
 
 | Pool | Drives | Capacity | Status |
 |---|---|---|---|
+| Boot pool | 2x 1TB SSD (P310) | Mirror — ~1TB usable | Pending install |
 | Data pool | 3x 8TB HDD | RAIDZ1 — ~16TB usable | Drives purchased — pool pending creation |
 
-> TrueNAS OS boots from a dedicated 1TB SSD (boot drive only). The data pool is independent of the OS drive. See ADR-016.
+> TrueNAS OS boots from a mirrored pool across two 1TB P310 SSDs. The data pool is independent. See ADR-016 and ADR-020.
 
 **Developer workstation:**
 
