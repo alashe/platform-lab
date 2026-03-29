@@ -149,7 +149,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | 3x 8TB HDDs purchased | ✅ | 2026-03-28 — RAIDZ1 pool (see ADR-016) |
-| TrueNAS Scale ISO downloaded and boot media prepared | 🔲 | |
+| TrueNAS Scale ISO downloaded and boot media prepared | ✅ | Loaded on Ventoy USB |
 | TrueNAS Scale installed to boot SSD (1TB P310) | 🔲 | OS drive — separate from data pool |
 | Network config complete — static IP, accessible on LAN | 🔲 | |
 | Dataset hierarchy designed and documented in `decisions.md` | 🔲 | Design before creating — ZFS hierarchy is hard to refactor with data present |
