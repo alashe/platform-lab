@@ -3,7 +3,7 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-03-28
+> **Last updated:** 2026-03-29
 > **Current phase:** Milestone 0 — Lab Blueprint and Standards
 
 ---
@@ -150,9 +150,9 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | 3x 8TB HDDs purchased | ✅ | 2026-03-28 — RAIDZ1 pool (see ADR-016) |
 | TrueNAS Scale ISO downloaded and boot media prepared | ✅ | Loaded on Ventoy USB |
-| TrueNAS Scale installed to mirrored boot pool (2x 1TB P310) | 🔲 | Mirrored boot pool — see ADR-020 |
-| Network config complete — static IP, accessible on LAN | 🔲 | |
-| Dataset hierarchy designed and documented in `decisions.md` | 🔲 | Design before creating — ZFS hierarchy is hard to refactor with data present |
+| TrueNAS Scale installed to mirrored boot pool (2x 1TB P310) | ✅ | Mirrored boot pool — see ADR-020 |
+| Network config complete — static IP, accessible on LAN | ✅ | `192.168.0.81` — `nas01.lab` |
+| Dataset hierarchy designed and documented in `decisions.md` | ✅ | ADR-021 — `backups/pbs`, `apps/<name>` (per-app at deploy time), `personal/` |
 | RAIDZ1 pool created with 3x 8TB HDDs | 🔲 | ~16TB usable; see ADR-016 |
 | Datasets created per hierarchy design | 🔲 | Include `recordsize=16K` on PBS datastore dataset |
 | NFS share for PBS datastore configured | 🔲 | Target: `tank/backups/pbs` or equivalent |

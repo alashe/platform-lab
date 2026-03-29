@@ -302,6 +302,45 @@ Internal admin UIs (Proxmox, TrueNAS, PBS, Grafana) are single-operator, LAN-onl
 
 ---
 
+## ADR-021 — TrueNAS dataset hierarchy
+
+**Decision:** The `tank` pool is organized into three top-level branches: `backups/`, `apps/`, and `personal/`. Datasets under `apps/` are created at app deployment time — not pre-provisioned.
+
+**Hierarchy:**
+
+```
+tank/
+├── backups/
+│   └── pbs/          recordsize=16K  — PBS datastore
+├── apps/             ← one dataset per app, created at deploy time
+└── personal/
+    ├── music/
+    ├── photos/
+    └── movies/
+```
+
+**ZFS properties by branch:**
+
+| Dataset | recordsize | compression | snapshots |
+|---|---|---|---|
+| `tank/backups/pbs` | 16K | lz4 | No — PBS manages its own retention |
+| `tank/apps/<name>` | 128K (default) | lz4 | Yes — daily, keep 14 |
+| `tank/personal/*` | 1M | lz4 | Yes — daily, keep 30 |
+
+**Key decisions:**
+
+- **One dataset per app** — snapshot and quota granularity is per-app; no shared volume between containers
+- **No pre-provisioning under `apps/`** — a dataset is created when the app is deployed, not before; Terraform adds a new dataset resource at deploy time
+- **No quotas at initial setup** — add quotas on specific apps (e.g. Nextcloud) once real usage data is available
+- **NFS shares follow dataset boundaries** — each `apps/<name>` dataset gets its own NFS share, mounted on `app01` as a bind mount source
+
+**Reasoning:**
+Per-dataset structure gives snapshot and quota granularity at the app level without locking in a fixed app list upfront. ZFS pool free space is shared dynamically — datasets grow as needed. Pre-creating empty datasets for apps that may never be deployed adds no value and creates cleanup overhead.
+
+**Rejected:** Single `tank/apps` share with subdirectories per app — loses per-app snapshot and quota capability; pre-creating all app datasets regardless of deployment status — unnecessary, harder to keep clean.
+
+---
+
 ## ADR-020 — TrueNAS boot pool mirrored across two P310 SSDs
 
 **Decision:** Use both 1TB P310 SSDs as a ZFS mirror for the TrueNAS boot pool.
