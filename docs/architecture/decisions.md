@@ -257,14 +257,14 @@ Rolling windows are also the approach used by Google SRE and Prometheus-native S
 
 ---
 
-## ADR-013 — DS212 scoped to PBS datastore warm copy only
+## ADR-013 — DS212 decommissioned from backup chain (superseded 2026-03-28)
 
-**Decision:** The Synology DS212 receives a nightly rsync of the PBS datastore only. It is not a general warm backup of all NAS data.
+**Decision:** The Synology DS212 is removed from the backup chain. The backup architecture simplifies to: PBS → nas01 (NFS datastore) → Backblaze B2 (offsite cold).
 
 **Reasoning:**
-The DS212 has approximately 2TB usable capacity. Once personal data (photos, music, documents) is migrated to the NAS, that capacity is freed and is sufficient to hold PBS datastore backups for a 4-VM cluster. Scoping it to PBS datastore only gives it a clear, bounded role: a warm local VM backup copy on a separate physical device, recoverable without the NAS or Backblaze B2. Personal data is covered by NAS → Backblaze B2 directly.
+The DS212 (~2012 hardware, ~2TB usable) and DS207 (~2008 hardware, ~1TB drives) are both beyond expected drive lifespan and holding personal media data with no offsite copy. The right resolution is to migrate that data to `tank/personal` on nas01 and back it up to Backblaze B2 — not to repurpose aging hardware as a backup target. The capacity mismatch (2TB vs. 16TB usable on nas01) means the DS212 could only ever hold a subset of data anyway, limiting its value as a recovery option. Backblaze B2 provides the offsite tier that the DS212 was intended to complement; with B2 in place, the DS212 adds minimal protection at the cost of operational complexity.
 
-**Rejected:** General-purpose warm backup of all NAS data (insufficient capacity, unclear scope).
+**Rejected (original ADR-013 rationale):** Scoping DS212 to PBS datastore only — superseded by hardware age and the cleaner NAS → B2 path.
 
 ---
 

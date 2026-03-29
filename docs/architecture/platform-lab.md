@@ -51,7 +51,6 @@ The design principle is **operational realism over complexity**: every layer exi
 | Device | OS / Filesystem | Role |
 |---|---|---|
 | NAS — Terramaster F4-424 Pro | TrueNAS Scale · ZFS | Primary storage; PBS datastore via NFS share; personal data (documents, photos, music) |
-| DS212 | — | Warm local PBS datastore copy; nightly rsync from NAS; separate physical device |
 
 **NAS storage:**
 

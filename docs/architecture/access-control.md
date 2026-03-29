@@ -57,14 +57,13 @@ Root is not used for routine operations. Its password is set at OS install and s
 
 ---
 
-### Appliance Admins — `nas01` and `nas02`
+### Appliance Admin — `nas01`
 
-TrueNAS Scale and Synology DSM manage users through their own systems, not Linux PAM. Ansible does not manage accounts on these devices.
+TrueNAS Scale manages users through its own system, not Linux PAM. Ansible does not manage accounts on this device.
 
 | Device | Account | Created by |
 |---|---|---|
 | `nas01` — TrueNAS Scale | `admin` (or renamed at install) | TrueNAS setup wizard |
-| `nas02` — Synology DS212 | `admin` (or renamed at install) | DSM setup wizard |
 
 Use a strong, unique password for each. Store in a password manager, not in the repo.
 
@@ -82,7 +81,6 @@ Use a strong, unique password for each. Store in a password manager, not in the 
 | `pbs01` | Yes | — | — | Ansible-managed VM; PBS web UI has its own auth |
 | `auto01` | Yes | — | — | Ansible-managed VM; all Ansible plays run as `ops` |
 | `nas01` | — | — | TrueNAS admin | Not Ansible-managed |
-| `nas02` | — | — | Synology admin | Not Ansible-managed |
 | `aws-web01` | Yes | — | — | Ansible-managed EC2; default cloud user superseded by `ops` |
 
 ---

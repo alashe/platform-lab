@@ -57,7 +57,6 @@ This document is written at Milestone 0. Apply these names at first configuratio
 | Hostname | Device | Role |
 |---|---|---|
 | `nas01` | Terramaster F4-424 Pro | Primary NAS — TrueNAS Scale · PBS datastore via NFS · personal data |
-| `nas02` | Synology DS212 | Warm backup — nightly rsync of PBS datastore from `nas01` |
 
 ### Cloud — AWS
 
@@ -96,7 +95,6 @@ Subnet: `192.168.0.0/24` · Gateway: `192.168.0.1`
 | `auto01` | `192.168.0.64` | VMs |
 | `app01` | `192.168.0.65` | VMs |
 | `nas01` | `192.168.0.81` | Storage |
-| `nas02` | `192.168.0.82` | Storage |
 
 > Last octet matches the host sequence number within its group (e.g., `pve01=.51`, `pve02=.52`). This makes addresses immediately readable without a lookup.
 
@@ -121,7 +119,6 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | `auto01.lab` | auto01 |
 | `app01.lab` | app01 |
 | `nas01.lab` | nas01 |
-| `nas02.lab` | nas02 |
 
 ---
 

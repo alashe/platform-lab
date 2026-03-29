@@ -589,14 +589,6 @@
               <span>Personal data · app persistent volumes</span>
             </div>
           </div>
-          <div class="hw-card" style="border-left:2px solid var(--teal)">
-            <div class="hw-name">nas02 — Synology DS212</div>
-            <div class="hw-model">Warm local copy · <LAB_IP></div>
-            <div class="hw-detail">
-              <span>Nightly rsync of PBS datastore from nas01</span>
-              <span>Separate physical device — independent failure domain</span>
-            </div>
-          </div>
           <div class="hw-card" style="border-left:2px solid var(--dim)">
             <div class="hw-name">Backblaze B2</div>
             <div class="hw-model">Offsite cold tier</div>
@@ -638,7 +630,7 @@
         </div>
         <div class="svc-card planned">
           <div class="svc-name">Proxmox Backup Server</div>
-          <div class="svc-desc">VM snapshot management. Datastore on nas01 via NFS. Warm copy to nas02 nightly.</div>
+          <div class="svc-desc">VM snapshot management. Datastore on nas01 via NFS. Cold tier to Backblaze B2.</div>
           <span class="status-badge planned">Planned · M2</span>
         </div>
         <div class="svc-card planned">
@@ -830,7 +822,6 @@
           <span class="stack-item">TrueNAS Scale · ZFS</span>
           <span class="stack-item">Proxmox Backup Server</span>
           <span class="stack-item">Backblaze B2</span>
-          <span class="stack-item">rsync</span>
         </div>
       </div>
 
@@ -853,7 +844,7 @@
       </div>
       <div class="spec-item">
         <div class="spec-key">Backup Strategy</div>
-        <div class="spec-val">3-2-1 · PBS → nas01 → nas02 + Backblaze B2</div>
+        <div class="spec-val">PBS → nas01 (NFS) → Backblaze B2 (offsite)</div>
       </div>
       <div class="spec-item">
         <div class="spec-key">Subnet</div>

@@ -158,6 +158,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | NFS share for PBS datastore configured | 🔲 | Target: `tank/backups/pbs` or equivalent |
 | NFS share accessible from Proxmox network | 🔲 | |
 | NFS shares for app01 persistent data configured on NAS | 🔲 | Linkding · Wallabag · Navidrome · Paperless · Audiobookshelf · Nextcloud · Netbox |
+| Media migrated from DS207/DS212 to `tank/personal` | 🔲 | Music · photos · movies — both old NAS devices decommissioned after migration; first time data has an offsite copy via B2 |
 | Snapshot schedule configured | 🔲 | |
 | Scrub schedule configured | 🔲 | |
 | Terraform `deevus/truenas` provider configured | 🔲 | Manages datasets and snapshot schedules — see ADR-017 |

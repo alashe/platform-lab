@@ -11,12 +11,12 @@ Proxmox VMs (scheduled snapshots)
         ↓
 Proxmox Backup Server  (PBS VM)
         ↓
-NAS  (warm storage · local network)
+NAS  (warm storage · local network · RAIDZ1)
         ↓
-DS212 (warm local copy · separate physical device)  +  Backblaze B2 (offsite cold)
+Backblaze B2  (offsite cold)
 ```
 
-> **Note:** The PBS → NAS link is not a sync job. The PBS datastore is configured to write directly to an NFS share exposed by the NAS. Data written to PBS lands on NAS-hosted ZFS storage in real time. The DS212 receives a nightly rsync of the PBS datastore only (not all NAS data), providing a warm local VM backup copy on a separate physical device.
+> **Note:** The PBS → NAS link is not a sync job. The PBS datastore is configured to write directly to an NFS share exposed by the NAS. Data written to PBS lands on NAS-hosted ZFS storage in real time.
 
 ---
 
@@ -36,7 +36,6 @@ DS212 (warm local copy · separate physical device)  +  Backblaze B2 (offsite co
 | VM snapshot — Utility VM | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
 | VM snapshot — Monitoring VM | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
 | VM snapshot — PBS VM | Proxmox | PBS | Weekly Sun 03:00 | 4 weekly |
-| NAS → DS212 (PBS datastore rsync) | NAS | DS212 | Nightly | mirrors PBS retention |
 | NAS → Backblaze B2 (cold) | NAS | Backblaze B2 | Weekly | 90 days |
 | Terraform state | S3 backend | Versioned automatically | On every apply | S3 versioning |
 | Ansible / Terraform code | Git | Remote repository | On every push | Full history |
@@ -47,8 +46,8 @@ DS212 (warm local copy · separate physical device)  +  Backblaze B2 (offsite co
 
 | Asset | Method | Location |
 |---|---|---|
-| Utility VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) → DS212 (warm local rsync) + Backblaze B2 (offsite cold) |
-| Monitoring VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) → DS212 (warm local rsync) + Backblaze B2 (offsite cold) |
+| Utility VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
+| Monitoring VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
 | Grafana dashboards | JSON in Git | Repository |
 | Prometheus rules | Config in Git | Repository |
 | Ansible playbooks / roles | Git | Repository |
@@ -155,16 +154,9 @@ qm start <new-vmid>
 Alertmanager fires a `BackupJobFailed` alert if a PBS job exits non-zero.  
 Check PBS job logs in the PBS UI: **Datastore → Jobs → last run**.
 
-### Verify NAS datastore and DS212 rsync
+### Verify NAS datastore
 
 The PBS datastore lives on a NAS NFS share — no sync job to check. Verify the NFS mount is active and PBS is writing successfully via the PBS UI (Datastore → Show Content).
-
-```bash
-# Confirm DS212 rsync completed and backup file dates match expected schedule
-ls -lh /mnt/nas/backups/
-```
-
-> **DS212 scope:** The DS212 receives a nightly rsync of the PBS datastore only — not all NAS data. Personal data (documents, photos, music) is covered by NAS → Backblaze B2 directly. The DS212 provides a warm local VM backup copy on a separate physical device, recoverable without the NAS or Backblaze B2.
 
 ---
 
