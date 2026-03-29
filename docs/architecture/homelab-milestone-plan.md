@@ -107,7 +107,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Access control standard documented | ✅ | `docs/architecture/access-control.md` |
 | Hardening baseline documented | ✅ | `docs/architecture/hardening-baseline.md` |
 | Milestone plan written | ✅ | This document |
-| `docs/setup/local-prereqs.md` written | 🔲 | |
+| `docs/setup/local-prereqs.md` written | ✅ | |
 | Root `Makefile` with operational commands | ✅ | |
 | Terraform module scaffold in place | ✅ | `modules/proxmox_vm/`, `modules/ec2_monitoring_target/` |
 | Terraform environment scaffold in place | ✅ | `environments/homelab/`, `environments/aws-dev/` |
