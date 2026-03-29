@@ -13,11 +13,11 @@
     --bg3:     #1a1e26;
     --border:  #252b36;
     --border2: #2e3547;
-    --dim:     #3d4a5e;
-    --muted:   #5a6b82;
-    --body:    #8fa3bc;
-    --head:    #c8d8ea;
-    --bright:  #e8f0f8;
+    --dim:     #4a5a72;
+    --muted:   #7a90aa;
+    --body:    #a8bdd4;
+    --head:    #dceaf6;
+    --bright:  #f0f6ff;
     --green:   #3dd68c;
     --green2:  #1d7a4e;
     --blue:    #4da6ff;
@@ -37,8 +37,8 @@
     background: var(--bg);
     color: var(--body);
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.65;
     min-height: 100vh;
   }
 
@@ -57,7 +57,7 @@
   }
   .logo {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 600;
     color: var(--bright);
     letter-spacing: 0.04em;
@@ -66,7 +66,7 @@
     color: var(--green);
     font-weight: 400;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     margin-left: 10px;
     letter-spacing: 0.1em;
   }
@@ -76,7 +76,7 @@
   }
   nav a {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
     color: var(--muted);
     text-decoration: none;
     padding: 6px 12px;
@@ -95,16 +95,16 @@
   /* ── Section ── */
   section { padding: 48px 0 0; }
   .section-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: 6px;
   }
   .section-title {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 600;
     color: var(--bright);
     margin-bottom: 24px;
@@ -125,27 +125,27 @@
     align-items: start;
   }
   .hero-eyebrow {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--green);
     margin-bottom: 10px;
   }
   .hero-title {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 28px;
+    font-size: 34px;
     font-weight: 600;
     color: var(--bright);
     letter-spacing: -0.01em;
     line-height: 1.2;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   .hero-sub {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--body);
     max-width: 560px;
-    line-height: 1.7;
+    line-height: 1.75;
     margin-bottom: 24px;
   }
   .tag-row {
@@ -154,12 +154,12 @@
     gap: 6px;
   }
   .tag {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
-    color: var(--body);
+    color: var(--head);
     background: var(--bg3);
     border: 1px solid var(--border2);
-    padding: 3px 9px;
+    padding: 4px 10px;
     border-radius: 2px;
     letter-spacing: 0.04em;
   }
@@ -180,14 +180,14 @@
   }
   .stat-val {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--bright);
   }
   .stat-label {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--muted);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
@@ -214,9 +214,9 @@
   .panel.red::before    { background: var(--red); }
 
   .panel-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-bottom: 14px;
     display: flex;
@@ -251,23 +251,23 @@
     padding: 12px 14px;
   }
   .hw-name {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--head);
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
   .hw-model {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
     margin-bottom: 8px;
   }
   .hw-detail {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
   .hw-detail span {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--body);
     display: flex;
     align-items: baseline;
@@ -278,9 +278,9 @@
   /* ── Service cards ── */
   .service-group { margin-bottom: 28px; }
   .service-group-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: 10px;
@@ -303,27 +303,27 @@
   .svc-card.deployed { border-left: 2px solid var(--green); }
   .svc-card.planned  { border-left: 2px solid var(--dim); }
   .svc-name {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--head);
-    margin-bottom: 4px;
+    margin-bottom: 5px;
   }
   .svc-card.planned .svc-name { color: var(--body); }
   .svc-desc {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
-    line-height: 1.5;
+    line-height: 1.6;
     margin-bottom: 10px;
   }
   .status-badge {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 2px;
   }
   .status-badge.deployed {
@@ -363,24 +363,24 @@
   .ms-row.active   { border-left: 2px solid var(--amber); }
   .ms-row.pending  { border-left: 2px solid var(--dim); }
   .ms-num {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--dim);
-    width: 20px;
+    width: 24px;
     flex-shrink: 0;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
   }
   .ms-name {
-    font-size: 11px;
+    font-size: 13px;
     flex: 1;
   }
   .ms-row.complete .ms-name { color: var(--head); }
   .ms-row.active   .ms-name { color: var(--amber); }
   .ms-row.pending  .ms-name { color: var(--muted); }
   .ms-tag {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .ms-row.complete .ms-tag { color: var(--green); }
@@ -400,9 +400,9 @@
     padding: 12px 14px;
   }
   .stack-group-label {
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
     margin-bottom: 10px;
@@ -410,10 +410,10 @@
   .stack-items {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 5px;
   }
   .stack-item {
-    font-size: 10px;
+    font-size: 13px;
     color: var(--body);
     display: flex;
     align-items: center;
@@ -434,14 +434,14 @@
     padding: 10px 14px;
   }
   .spec-key {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--muted);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
   .spec-val {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--head);
   }
 
@@ -458,12 +458,12 @@
   }
   .footer-left {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--head);
   }
   .footer-right {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--muted);
   }
 
@@ -517,23 +517,23 @@
     </div>
     <div class="stat-col">
       <div class="stat-item">
-        <span class="stat-val">2</span>
+        <span class="stat-val" style="color:var(--green)">2</span>
         <span class="stat-label">Proxmox Nodes</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">5</span>
+        <span class="stat-val" style="color:var(--green)">5</span>
         <span class="stat-label">Planned VMs</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">~16 TB</span>
+        <span class="stat-val" style="color:var(--blue)">~16 TB</span>
         <span class="stat-label">NAS Usable Storage</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">3-2-1</span>
+        <span class="stat-val" style="color:var(--teal)">3-2-1</span>
         <span class="stat-label">Backup Strategy</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val">&lt; 30 min</span>
+        <span class="stat-val" style="color:var(--amber)">&lt; 30 min</span>
         <span class="stat-label">RTO Target</span>
       </div>
     </div>
@@ -551,21 +551,21 @@
       <div class="panel green">
         <div class="panel-label"><span class="dot"></span> Compute · Proxmox Cluster</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--green)">
             <div class="hw-name">pve01 — Dell Precision 7550</div>
             <div class="hw-model">Primary compute · <LAB_IP></div>
             <div class="hw-detail">
               <span>Hosts util01 · pbs01 · app01</span>
             </div>
           </div>
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--green)">
             <div class="hw-name">pve02 — Dell Precision 7560</div>
             <div class="hw-model">Secondary compute · <LAB_IP></div>
             <div class="hw-detail">
               <span>Hosts mon01 · auto01</span>
             </div>
           </div>
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--purple)">
             <div class="hw-name">qdev01 — HP EliteDesk 800 mini</div>
             <div class="hw-model">Bare metal · <LAB_IP></div>
             <div class="hw-detail">
@@ -580,7 +580,7 @@
       <div class="panel blue">
         <div class="panel-label"><span class="dot"></span> Storage · Backup Chain</div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--blue)">
             <div class="hw-name">nas01 — Terramaster F4-424 Pro</div>
             <div class="hw-model">TrueNAS Scale · <LAB_IP></div>
             <div class="hw-detail">
@@ -589,7 +589,7 @@
               <span>Personal data · app persistent volumes</span>
             </div>
           </div>
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--teal)">
             <div class="hw-name">nas02 — Synology DS212</div>
             <div class="hw-model">Warm local copy · <LAB_IP></div>
             <div class="hw-detail">
@@ -597,7 +597,7 @@
               <span>Separate physical device — independent failure domain</span>
             </div>
           </div>
-          <div class="hw-card">
+          <div class="hw-card" style="border-left:2px solid var(--dim)">
             <div class="hw-name">Backblaze B2</div>
             <div class="hw-model">Offsite cold tier</div>
             <div class="hw-detail">
@@ -783,8 +783,8 @@
     <hr class="section-divider">
     <div class="stack-section">
 
-      <div class="stack-group">
-        <div class="stack-group-label">Virtualization</div>
+      <div class="stack-group" style="border-top:2px solid var(--green)">
+        <div class="stack-group-label" style="color:var(--green)">Virtualization</div>
         <div class="stack-items">
           <span class="stack-item">Proxmox VE</span>
           <span class="stack-item">Docker + Compose</span>
@@ -792,8 +792,8 @@
         </div>
       </div>
 
-      <div class="stack-group">
-        <div class="stack-group-label">Infrastructure as Code</div>
+      <div class="stack-group" style="border-top:2px solid var(--purple)">
+        <div class="stack-group-label" style="color:var(--purple)">Infrastructure as Code</div>
         <div class="stack-items">
           <span class="stack-item">Terraform</span>
           <span class="stack-item">Ansible</span>
@@ -802,8 +802,8 @@
         </div>
       </div>
 
-      <div class="stack-group">
-        <div class="stack-group-label">Observability</div>
+      <div class="stack-group" style="border-top:2px solid var(--amber)">
+        <div class="stack-group-label" style="color:var(--amber)">Observability</div>
         <div class="stack-items">
           <span class="stack-item">Prometheus</span>
           <span class="stack-item">Grafana</span>
@@ -814,8 +814,8 @@
         </div>
       </div>
 
-      <div class="stack-group">
-        <div class="stack-group-label">Cloud &amp; CI/CD</div>
+      <div class="stack-group" style="border-top:2px solid var(--blue)">
+        <div class="stack-group-label" style="color:var(--blue)">Cloud &amp; CI/CD</div>
         <div class="stack-items">
           <span class="stack-item">AWS EC2 · VPC · IAM</span>
           <span class="stack-item">S3 + DynamoDB (TF state)</span>
@@ -824,8 +824,8 @@
         </div>
       </div>
 
-      <div class="stack-group">
-        <div class="stack-group-label">Storage &amp; Backup</div>
+      <div class="stack-group" style="border-top:2px solid var(--teal)">
+        <div class="stack-group-label" style="color:var(--teal)">Storage &amp; Backup</div>
         <div class="stack-items">
           <span class="stack-item">TrueNAS Scale · ZFS</span>
           <span class="stack-item">Proxmox Backup Server</span>
