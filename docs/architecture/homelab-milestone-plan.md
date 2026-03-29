@@ -97,21 +97,21 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| GitHub repository initialized | 🔲 | Private repo |
+| GitHub repository initialized | ✅ | Private repo |
 | Repository layout implemented | 🔄 | Structure defined; files in progress |
-| Hostnames, roles, and IP plan documented | 🔄 | `docs/architecture/naming-convention.md` — IP address table not yet written |
-| Router DHCP pool shrunk to `192.168.0.100`–`192.168.0.253` | 🔲 | Frees `.2`–`.99` for static assignments; do before assigning static IPs |
-| IP plan written into `docs/architecture/naming-convention.md` | 🔲 | Full address table per range grouping |
+| Hostnames, roles, and IP plan documented | ✅ | `docs/architecture/naming-convention.md` |
+| Router DHCP pool shrunk to `192.168.0.100`–`192.168.0.253` | ✅ | Frees `.2`–`.99` for static assignments; do before assigning static IPs |
+| IP plan written into `docs/architecture/naming-convention.md` | ✅ | Full address table per range grouping |
 | Architecture diagram created | ✅ | `docs/architecture/platform-lab.md` |
 | Architecture decisions log started | ✅ | `docs/architecture/decisions.md` |
 | Access control standard documented | ✅ | `docs/architecture/access-control.md` |
 | Hardening baseline documented | ✅ | `docs/architecture/hardening-baseline.md` |
 | Milestone plan written | ✅ | This document |
 | `docs/setup/local-prereqs.md` written | 🔲 | |
-| Root `Makefile` with operational commands | 🔲 | |
-| Terraform module scaffold in place | 🔲 | `modules/proxmox_vm/`, `modules/ec2_monitoring_target/` |
-| Terraform environment scaffold in place | 🔲 | `environments/homelab/`, `environments/aws-dev/` |
-| Ansible inventory scaffold in place | 🔲 | `homelab/`, `aws/`, `mixed/` |
+| Root `Makefile` with operational commands | ✅ | |
+| Terraform module scaffold in place | ✅ | `modules/proxmox_vm/`, `modules/ec2_monitoring_target/` |
+| Terraform environment scaffold in place | ✅ | `environments/homelab/`, `environments/aws-dev/` |
+| Ansible inventory scaffold in place | ✅ | `homelab/`, `aws/`, `mixed/` |
 | Public GitHub repo created | ✅ | `alashe/platform-lab` |
 | `.github/workflows/sync-public.yml` written | ✅ | Workflow active — triggers on push to main |
 | `.github/sync-manifest.txt` initialized | ✅ | Milestone 0 docs + showcase page listed; code files added as built |
