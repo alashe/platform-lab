@@ -44,7 +44,7 @@ The design principle is **operational realism over complexity**: every layer exi
 | Device | Role |
 |---|---|
 | Router | Gateway and DHCP server |
-| Managed 2.5GbE switch | Connects router to lab nodes; enables 2.5GbE connectivity to the NAS; supports VLANs and LACP |
+| Unmanaged 2.5GbE switch (GigaPlus 10-port) | Connects router to lab nodes; enables 2.5GbE connectivity to the NAS; plug-and-play, no VLAN or LACP support |
 
 **Storage:**
 
