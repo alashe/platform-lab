@@ -35,9 +35,9 @@ The design principle is **operational realism over complexity**: every layer exi
 
 | Node | Hardware | Role |
 |---|---|---|
-| pve1 | Dell Precision 7550 | Primary compute |
-| pve2 | Dell Precision 7560 | Secondary compute |
-| qdevice | HP Elitedesk 800 mini | Corosync QDevice · bare-metal utility node |
+| pve01 | Dell Precision 7550 | Primary compute |
+| pve02 | Dell Precision 7560 | Secondary compute |
+| qdev01 | HP Elitedesk 800 mini | Corosync QDevice · bare-metal utility node |
 
 **Network infrastructure:**
 
@@ -56,7 +56,7 @@ The design principle is **operational realism over complexity**: every layer exi
 
 | Pool | Drives | Capacity | Status |
 |---|---|---|---|
-| Boot pool | 2x 1TB SSD (P310) | Mirror — ~1TB usable | Pending install |
+| Boot pool | 2x 1TB SSD (P310) | Mirror — ~1TB usable | Installed 2026-03-29 |
 | Data pool | 3x 8TB HDD | RAIDZ1 — ~16TB usable | Drives purchased — pool pending creation |
 
 > TrueNAS OS boots from a mirrored pool across two 1TB P310 SSDs. The data pool is independent. See ADR-016 and ADR-020.
@@ -73,12 +73,12 @@ The design principle is **operational realism over complexity**: every layer exi
 
 | VM | Node | Purpose | Services |
 |---|---|---|---|
-| Utility VM | pve1 | Primary service runtime | Docker · Pi-hole · nginx target |
-| Monitoring VM | pve2 | Observability — independent failure domain | Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
-| PBS VM | pve1 | Backup server | Proxmox Backup Server |
-| Automation VM | pve2 | Ansible + Terraform execution | Ansible controller · Terraform workspace |
+| `util01` | pve01 | Primary service runtime | Docker · Pi-hole · nginx target |
+| `mon01` | pve02 | Observability — independent failure domain | Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
+| `pbs01` | pve01 | Backup server | Proxmox Backup Server |
+| `auto01` | pve02 | Ansible + Terraform execution | Ansible controller · Terraform workspace |
 
-> Node assignments are recommended defaults, adjusted based on resource availability at build time. **Exception: PBS VM on pve1 is confirmed** — its datastore is hosted on the NAS via NFS, so migrating the PBS VM to pve2 requires no datastore changes.
+> Node assignments are recommended defaults, adjusted based on resource availability at build time. **Exception: `pbs01` on `pve01` is confirmed** — its datastore is hosted on the NAS via NFS, so migrating `pbs01` to `pve02` requires no datastore changes.
 
 **HP Elitedesk 800 mini — bare-metal roles:**
 
@@ -89,9 +89,9 @@ The design principle is **operational realism over complexity**: every layer exi
 
 > The EliteDesk is managed by the same Ansible roles as the Utility VM, demonstrating role portability across bare metal and VMs. Pi-hole on the EliteDesk is activated as secondary DNS during the whole-home cutover (Milestone 8), after the Utility VM is established as primary.
 
-**Separation requirement:** The Monitoring VM runs on pve2, independent of the Utility VM on pve1, so service failures do not remove visibility or alerting.
+**Separation requirement:** `mon01` runs on `pve02`, independent of `util01` on `pve01`, so service failures do not remove visibility or alerting.
 
-**Mobility requirement:** The Monitoring VM must be restorable or migratable between Proxmox hosts. PBS-backed restore is sufficient for this phase.
+**Mobility requirement:** `mon01` must be restorable or migratable between Proxmox hosts. PBS-backed restore is sufficient for this phase.
 
 ---
 
@@ -122,7 +122,7 @@ Role: primary DNS filtering for the home network.
 
 | Instance | Host | Role | Activated |
 |---|---|---|---|
-| Primary | Utility VM (pve1) | Active DNS for whole network | Milestone 8 cutover |
+| Primary | `util01` (pve01) | Active DNS for whole network | Milestone 8 cutover |
 | Secondary | HP Elitedesk 800 mini | Failover DNS | Milestone 8 cutover |
 
 Router DHCP distributes both IPs: Utility VM as primary, EliteDesk as secondary. Devices fail over automatically if the Utility VM is unreachable.
@@ -163,7 +163,7 @@ Ansible enforces baseline configuration across all managed hosts:
 | Firewall | ufw default deny · allow only required ports |
 | Users | `ops` user with sudo · authorized keys deployed |
 
-Managed hosts: Utility VM, Monitoring VM, PBS VM, Automation VM, HP EliteDesk (bare metal), AWS EC2.  
+Managed hosts: `util01`, `mon01`, `pbs01`, `auto01`, `qdev01` (bare metal), AWS EC2.  
 The Fedora workstation is not managed by Ansible.
 
 Compliance is validated by re-running playbooks in check mode to detect drift.
@@ -172,7 +172,7 @@ Compliance is validated by re-running playbooks in check mode to detect drift.
 
 ## Observability Stack
 
-Hosted on the Monitoring VM (pve2). Scrapes all managed hosts and EC2.
+Hosted on `mon01` (pve02). Scrapes all managed hosts and EC2.
 
 | Component | Role |
 |---|---|
@@ -195,10 +195,10 @@ HTTP endpoints            → Uptime Kuma          → Status page · alerts
 ```
 
 **Uptime Kuma monitors:**
-- nginx target — Utility VM (`/healthz`)
+- nginx target — `util01` (`/healthz`)
 - nginx target — EliteDesk (`/healthz`)
 - nginx target — AWS EC2 (`/healthz`)
-- Pi-hole DNS endpoint — Utility VM
+- Pi-hole DNS endpoint — `util01`
 - Pi-hole DNS endpoint — EliteDesk
 - Grafana availability
 - External DNS — upstream resolution check
@@ -259,7 +259,7 @@ From `terraform apply` to a monitored, compliant host: under 15 minutes.
 ```
 VM snapshots (Proxmox schedule)
         ↓
-Proxmox Backup Server (PBS VM · pve1)
+Proxmox Backup Server (`pbs01` · pve01)
         ↓
 NAS  (warm storage · local)
   RAIDZ1 HDD pool — 3x 8TB (~16TB usable)
