@@ -609,7 +609,7 @@
         <span>Gateway: <span style="color:var(--head)"><LAB_IP></span> · TP-Link AX1500</span>
         <span>Static range: <span style="color:var(--head)">.51–.89</span> (platform hosts)</span>
         <span>DHCP pool: <span style="color:var(--head)">.100–.253</span></span>
-        <span>Switch: <span style="color:var(--head)">Managed 2.5GbE</span></span>
+        <span>Switch: <span style="color:var(--head)">Unmanaged 2.5GbE</span></span>
       </div>
     </div>
   </section>
@@ -769,7 +769,7 @@
         <div class="stack-group-label" style="color:var(--blue)">Cloud &amp; CI/CD</div>
         <div class="stack-items">
           <span class="stack-item">AWS EC2 · VPC · IAM</span>
-          <span class="stack-item">S3 + DynamoDB (TF state)</span>
+          <span class="stack-item">S3 (TF state · native lock)</span>
           <span class="stack-item">CloudWatch</span>
           <span class="stack-item">GitHub Actions</span>
         </div>
@@ -807,11 +807,11 @@
       </div>
       <div class="spec-item">
         <div class="spec-key">Subnet</div>
-        <div class="spec-val"><LAB_IP>/24 · Managed 2.5GbE switch</div>
+        <div class="spec-val"><LAB_IP>/24 · Unmanaged 2.5GbE switch</div>
       </div>
       <div class="spec-item">
         <div class="spec-key">IaC</div>
-        <div class="spec-val">Terraform (Proxmox + AWS) · Ansible (all hosts)</div>
+        <div class="spec-val">Terraform (Proxmox + AWS + NAS) · Ansible (all hosts)</div>
       </div>
       <div class="spec-item">
         <div class="spec-key">CI/CD</div>
