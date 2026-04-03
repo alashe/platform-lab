@@ -246,7 +246,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Ansible syntax check runs on PR | 🔲 | No live hosts required |
 | Placeholder playbook scaffolded so CI has a target | 🔲 | Replaced by real playbooks at Milestone 9 |
 | Pipeline documented in `terraform/README.md` | 🔲 | |
-| AWS cost estimate documented before first apply | 🔲 | See ADR-011 · baseline estimate for EC2, S3, DynamoDB |
+| AWS cost estimate documented before first apply | 🔲 | See ADR-011 · baseline estimate for EC2, S3 |
 | AWS Budget alert configured | 🔲 | Alert at $10/mo — before pipeline can trigger `terraform apply` |
 | `PUBLIC_REPO_PAT` secret configured in private repo | 🔲 | PAT with `repo` scope on the public repo |
 | `PUBLIC_REPO` variable configured in private repo | 🔲 | Set to `<username>/<public-repo-name>` |
@@ -293,7 +293,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Grafana dashboards exported as JSON to repo | 🔲 | |
 | Monitoring VM included in PBS backup schedule | 🔲 | |
 | Monitoring VM recovery verified on alternate host | 🔲 | |
-| `docs/sre/slo-definitions.md` authored — SLIs, SLO targets, error budgets defined | 🔲 | Pi-hole DNS · nginx · Prometheus — see ADR-014, ADR-015 |
+| `docs/sre/slo-definitions.md` authored — SLIs, SLO targets, error budgets defined | 🔲 | Pi-hole DNS · nginx · Prometheus · PBS — see ADR-014, ADR-015 |
 | Prometheus recording rules for SLI calculations deployed | 🔲 | `prometheus/rules/slo-recording.yml` |
 | Alertmanager burn rate rules active for all three SLOs | 🔲 | Fast burn (1h) and slow burn (6h) windows |
 | Grafana error budget panels created for each SLO | 🔲 | One gauge panel per SLI — % budget remaining |
@@ -344,9 +344,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | S3 backend bucket created | 🔲 | |
-| DynamoDB lock table created | 🔲 | |
 | `terraform/backend/backend-notes.md` written | 🔲 | |
-| Cost estimate reviewed and documented | 🔲 | EC2 · S3 · DynamoDB · data transfer — see ADR-011 |
+| Cost estimate reviewed and documented | 🔲 | EC2 · S3 · data transfer — see ADR-011 |
 | AWS Budget alert active before `terraform apply` | 🔲 | Confirmed from M5 setup |
 | `terraform/modules/ec2_monitoring_target/` written | 🔲 | |
 | `terraform/environments/aws-dev/` configured | 🔲 | |
