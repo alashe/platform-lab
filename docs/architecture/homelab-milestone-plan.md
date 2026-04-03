@@ -153,7 +153,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | TrueNAS Scale installed to mirrored boot pool (2x 1TB P310) | ✅ | Mirrored boot pool — see ADR-020 |
 | Network config complete — static IP, accessible on LAN | ✅ | `192.168.0.81` — `nas01.lab` |
 | Dataset hierarchy designed and documented in `decisions.md` | ✅ | ADR-021 — `backups/pbs`, `apps/<name>` (per-app at deploy time), `personal/` |
-| RAIDZ1 pool created with 3x 8TB HDDs | 🔲 | ~16TB usable; see ADR-016 |
+| RAIDZ1 pool created with 3x 8TB HDDs | ✅ | ~14.55 TiB usable; see ADR-016 |
 | Datasets created per hierarchy design | 🔲 | Include `recordsize=16K` on PBS datastore dataset |
 | NFS share for PBS datastore configured | 🔲 | Target: `tank/backups/pbs` or equivalent |
 | NFS share accessible from Proxmox network | 🔲 | |
