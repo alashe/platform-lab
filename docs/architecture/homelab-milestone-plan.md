@@ -298,6 +298,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Alertmanager burn rate rules active for all three SLOs | 🔲 | Fast burn (1h) and slow burn (6h) windows |
 | Grafana error budget panels created for each SLO | 🔲 | One gauge panel per SLI — % budget remaining |
 | `docs/operations/monitoring-runbook.md` reflects actual state | 🔄 | Doc written; lab not yet built |
+| Jaeger all-in-one container deployed on Monitoring VM | ⏸ | Deferred — tracing adds most value once multi-service calls exist (M10+); revisit after AWS mirror |
 
 ---
 
@@ -387,6 +388,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Public repo README polished for portfolio presentation | 🔲 | Standalone context for someone landing on the public repo |
 | Public repo walkable as a portfolio artifact | 🔲 | No broken links, no placeholder content, no internal references |
 | Repo walkable live in an interview | 🔲 | |
+| Jaeger trace captured from a reliability drill scenario | 🔲 | Optional — instrument one service (e.g. EC2 nginx target); capture a trace during a drill and export to repo as portfolio artifact |
 
 ---
 
@@ -394,6 +396,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Reason |
 |---|---|
+| Jaeger (full deployment) | Deferred to M10+ — tracing value is low until multi-service request paths exist; all-in-one container planned for Monitoring VM once AWS mirror is live |
 | Kubernetes | Complexity not justified for service count — see ADR-001 |
 | Ansible AWX / Tower | Overkill for single-operator homelab |
 | HashiCorp Vault | `ansible-vault` sufficient for this scope |
