@@ -62,6 +62,7 @@ make validate
 | 9 | Ansible Automation with Vault | 5, 7 |
 | 10 | AWS Infrastructure Mirror (Terraform + Ansible) | 5, 9 |
 | 11 | Reliability Drills and Platform Documentation | 10 |
+| 12 | AI Capstone: LLM Inference as a Managed Platform Service | 5, 7, 11 |
 
 > **Why CI/CD is Milestone 5:** The pipeline is built as soon as Terraform is proven locally, so every subsequent change is delivered through it.
 >
@@ -389,6 +390,31 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Public repo walkable as a portfolio artifact | 🔲 | No broken links, no placeholder content, no internal references |
 | Repo walkable live in an interview | 🔲 | |
 | Jaeger trace captured from a reliability drill scenario | 🔲 | Optional — instrument one service (e.g. EC2 nginx target); capture a trace during a drill and export to repo as portfolio artifact |
+
+---
+
+## Milestone 12 — AI Capstone: LLM Inference as a Managed Platform Service
+
+**Objective:** Provision and operate an LLM inference service (Ollama) as a managed platform workload — demonstrating that any service class can be onboarded, monitored, and integrated into operational workflows using the existing stack.
+
+> **Full design doc:** `docs/planning/ai-capstone-llm-inference.md`
+
+| Item | Status | Notes |
+|---|---|---|
+| Host placement decision made and documented in ADR | 🔲 | Placement must fit existing topology — no exceptions |
+| Ansible role: install and configure Ollama | 🔲 | systemd service management · resource constraints · model pull on first run |
+| Ollama role idempotent and re-runnable | 🔲 | |
+| Prometheus scrape config addition | 🔲 | Confirm which metrics Ollama exposes natively |
+| Grafana dashboard: request rate · latency · uptime · token throughput | 🔲 | |
+| Uptime Kuma HTTP check on Ollama API endpoint | 🔲 | |
+| Promtail config: ship Ollama systemd logs to Loki | 🔲 | Same pattern as other services |
+| Alertmanager rule: inference endpoint unavailable or error rate exceeded | 🔲 | Fits existing routing conventions — no new routing trees |
+| Webhook integration: Alertmanager → script → Ollama API → triage output | 🔲 | Phase 4 — highest variance; scope creep risk; flag and defer polish |
+| Triage script fails gracefully if Ollama is unavailable | 🔲 | No dependency loop |
+| Triage script committed to repo with runbook entry | 🔲 | |
+| `docs/capstone/ai-ops-integration.md` written | 🔲 | Framed as AIOps-adjacent infrastructure work, not ML engineering |
+| ADR: local inference vs. external API | 🔲 | Rationale: cost · data locality · operational control · learning value |
+| 2027 Kubernetes evolution path documented in portfolio doc | 🔲 | Ollama on k3s + ArgoCD — note intended direction without over-engineering now |
 
 ---
 
