@@ -77,8 +77,18 @@ The design principle is **operational realism over complexity**: every layer exi
 | `mon01` | pve02 | Observability — independent failure domain | Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
 | `pbs01` | pve01 | Backup server | Proxmox Backup Server |
 | `auto01` | pve02 | Ansible + Terraform execution | Ansible controller · Terraform workspace |
+| `llm01` | TBD at M12 | LLM inference service | Ollama — AI capstone (M12) |
 
 > Node assignments are recommended defaults, adjusted based on resource availability at build time. **Exception: `pbs01` on `pve01` is confirmed** — its datastore is hosted on the NAS via NFS, so migrating `pbs01` to `pve02` requires no datastore changes.
+
+**Non-platform VMs (retained — not Ansible/Terraform managed):**
+
+| VM | Node | Notes |
+|---|---|---|
+| `ubuntu01` (VM ID 110) | pve01 or pve02 | Retained from pre-platform setup · personal use |
+| `win01` (VM ID 111) | pve01 or pve02 | Retained from pre-platform setup · personal use |
+
+> These VMs coexist on the cluster but are outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
 
 **HP Elitedesk 800 mini — bare-metal roles:**
 
@@ -107,7 +117,7 @@ VPC (10.0.0.0/16)
     └── IAM instance profile   least-privilege · CloudWatch write
 ```
 
-Terraform state is stored in S3 with locking via DynamoDB.  
+Terraform state is stored in S3 with native locking (`use_lockfile = true`, Terraform ≥ 1.10).
 Ansible runs the identical baseline playbook against EC2 as it does locally.
 
 ---

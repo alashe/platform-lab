@@ -41,14 +41,14 @@ A dedicated automation host separates code development from execution against li
 
 ---
 
-## ADR-004 — Terraform S3 backend with DynamoDB locking
+## ADR-004 — Terraform S3 backend with native S3 locking
 
-**Decision:** Remote state in S3, state locking via DynamoDB.
+**Decision:** Remote state in S3, state locking via native S3 locking (`use_lockfile = true`). No DynamoDB table.
 
-**Reasoning:**  
-Local state files get lost with disk failures or laptop wipes. Remote state in S3 means the AWS infrastructure definition survives any local machine loss. DynamoDB locking prevents concurrent applies from corrupting state. This is also a standard pattern interviewers expect to see.
+**Reasoning:**
+Local state files get lost with disk failures or laptop wipes. Remote state in S3 means the AWS infrastructure definition survives any local machine loss. Native S3 locking (introduced in Terraform 1.10, stable in 1.14+) stores a `.tflock` file in S3 alongside the state, preventing concurrent applies from corrupting state — without the overhead of provisioning and paying for a separate DynamoDB table. This is the current industry standard for S3 backends on Terraform ≥ 1.10.
 
-**Rejected:** Local `.tfstate` file.
+**Rejected:** Local `.tfstate` file; DynamoDB locking (superseded by native S3 locking as of Terraform 1.10 — an unnecessary dependency for new deployments on current Terraform versions).
 
 **Setup:** [`terraform/backend/backend-notes.md`](../../terraform/backend/backend-notes.md)
 
@@ -150,9 +150,8 @@ The CI/CD pipeline introduced at Milestone 5 includes a `terraform apply` stage 
 |---|---|
 | EC2 t3.micro (on-demand, us-east-1) | ~$8–10 |
 | S3 state bucket (minimal data) | < $0.01 |
-| DynamoDB lock table (on-demand) | < $0.01 |
 | Data transfer (light scraping traffic) | < $1 |
-| **Total estimate** | **~$10–12/mo** |
+| **Total estimate** | **~$9–11/mo** |
 
 > Verify current pricing at [aws.amazon.com/pricing](https://aws.amazon.com/pricing) before provisioning — on-demand rates change.
 

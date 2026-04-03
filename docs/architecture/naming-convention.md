@@ -49,8 +49,18 @@ This document is written at Milestone 0. Apply these names at first configuratio
 | `pbs01` | 103 | pve01 | Proxmox Backup Server |
 | `auto01` | 104 | pve02 | Ansible execution · Terraform workspace |
 | `app01` | 105 | pve01 | Self-hosted personal apps — Docker Compose services |
+| `llm01` | 106 | TBD at M12 | LLM inference service — Ollama · AI capstone (M12) |
 
 > Node assignments are defaults. Adjust at build time based on resource availability. The exception is `pbs01` on `pve01` — confirmed per architecture doc.
+
+### Non-Platform VMs (retained — not Ansible/Terraform managed)
+
+| Hostname | VM ID | Role |
+|---|---|---|
+| `ubuntu01` | 110 | Retained personal Ubuntu Server VM from pre-platform setup |
+| `win01` | 111 | Retained Windows 11 Pro VM from pre-platform setup |
+
+> These VMs coexist on the cluster but are outside the platform's automation scope. They are assigned IDs and IPs from the non-platform range to avoid conflicts with managed infrastructure.
 
 ### Storage Devices
 
@@ -94,6 +104,9 @@ Subnet: `192.168.0.0/24` · Gateway: `192.168.0.1`
 | `pbs01` | `192.168.0.63` | VMs |
 | `auto01` | `192.168.0.64` | VMs |
 | `app01` | `192.168.0.65` | VMs |
+| `llm01` | `192.168.0.66` | VMs |
+| `ubuntu01` | `192.168.0.67` | VMs (non-platform) |
+| `win01` | `192.168.0.68` | VMs (non-platform) |
 | `nas01` | `192.168.0.81` | Storage |
 
 > Last octet matches the host sequence number within its group (e.g., `pve01=.51`, `pve02=.52`). This makes addresses immediately readable without a lookup.
@@ -118,6 +131,7 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | `pbs01.lab` | pbs01 |
 | `auto01.lab` | auto01 |
 | `app01.lab` | app01 |
+| `llm01.lab` | llm01 |
 | `nas01.lab` | nas01 |
 
 ---
@@ -131,6 +145,9 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | 103 | `pbs01` | PBS VM |
 | 104 | `auto01` | Automation VM |
 | 105 | `app01` | Apps VM |
+| 106 | `llm01` | LLM Inference VM (M12) |
+| 110 | `ubuntu01` | Retained Ubuntu Server VM (non-platform) |
+| 111 | `win01` | Retained Windows 11 Pro VM (non-platform) |
 
 Reserved ranges:
 
@@ -138,7 +155,8 @@ Reserved ranges:
 |---|---|
 | 100 | Reserved — do not assign |
 | 101–109 | Core platform VMs |
-| 110–199 | Future VMs |
+| 110–119 | Non-platform / retained VMs |
+| 120–199 | Future VMs |
 | 9000+ | VM templates |
 
 ---
