@@ -78,7 +78,7 @@ This document is written at Milestone 0. Apply these names at first configuratio
 
 ## IP Address Plan
 
-Subnet: `192.168.0.0/24` · Gateway: `192.168.0.1`
+Subnet: `<LAB_IP>/24` · Gateway: `<LAB_IP>`
 
 ### Range Assignments
 
@@ -96,18 +96,18 @@ Subnet: `192.168.0.0/24` · Gateway: `192.168.0.1`
 
 | Host | IP | Group |
 |---|---|---|
-| `pve01` | `192.168.0.51` | Proxmox nodes |
-| `pve02` | `192.168.0.52` | Proxmox nodes |
-| `qdev01` | `192.168.0.53` | Proxmox nodes / bare metal |
-| `util01` | `192.168.0.61` | VMs |
-| `mon01` | `192.168.0.62` | VMs |
-| `pbs01` | `192.168.0.63` | VMs |
-| `auto01` | `192.168.0.64` | VMs |
-| `app01` | `192.168.0.65` | VMs |
-| `llm01` | `192.168.0.66` | VMs |
-| `ubuntu01` | `192.168.0.67` | VMs (non-platform) |
-| `win01` | `192.168.0.68` | VMs (non-platform) |
-| `nas01` | `192.168.0.81` | Storage |
+| `pve01` | `<LAB_IP>` | Proxmox nodes |
+| `pve02` | `<LAB_IP>` | Proxmox nodes |
+| `qdev01` | `<LAB_IP>` | Proxmox nodes / bare metal |
+| `util01` | `<LAB_IP>` | VMs |
+| `mon01` | `<LAB_IP>` | VMs |
+| `pbs01` | `<LAB_IP>` | VMs |
+| `auto01` | `<LAB_IP>` | VMs |
+| `app01` | `<LAB_IP>` | VMs |
+| `llm01` | `<LAB_IP>` | VMs |
+| `ubuntu01` | `<LAB_IP>` | VMs (non-platform) |
+| `win01` | `<LAB_IP>` | VMs (non-platform) |
+| `nas01` | `<LAB_IP>` | Storage |
 
 > Last octet matches the host sequence number within its group (e.g., `pve01=.51`, `pve02=.52`). This makes addresses immediately readable without a lookup.
 
