@@ -138,8 +138,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Datasets created per hierarchy design | ✅ | `apps`, `backups`, `backups/pbs`, `personal` — managed via Terraform |
 | NFS share for PBS datastore configured | ✅ | `tank/backups/pbs` — restricted to pbs01 (192.168.0.63) via Ansible |
 | NFS share accessible from Proxmox network | 🔲 | Verify when PBS is configured in M2 |
-| Snapshot schedule configured | 🔲 | |
-| Scrub schedule configured | 🔲 | |
+| Snapshot schedule configured | ✅ | Daily snapshots: `tank/backups/pbs` (7-day retention), `tank/personal` (4-week retention) — via Ansible |
+| Scrub schedule configured | ✅ | Monthly scrub of `tank` pool (weekly check, 30-day threshold) — via Ansible |
 | Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
 | All post-pool dataset config committed to Terraform | ✅ | Dataset hierarchy managed via `terraform/modules/truenas` |
 | NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
