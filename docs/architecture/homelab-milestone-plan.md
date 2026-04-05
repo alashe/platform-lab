@@ -119,26 +119,6 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ---
 
-## Milestone 1 — Proxmox Baseline (pve1 + pve2)
-
-**Objective:** Create a stable virtualization foundation for the homelab platform.
-
-| Item | Status | Notes |
-|---|---|---|
-| win-11-pro VM disk backed up before reinstall | 🔲 | Valid Windows license — preserve virtual hardware config on restore to avoid deactivation; use Proxmox `.vma` backup |
-| ubuntu-server VM — back up before reinstall | 🔲 | Keeping — back up via Proxmox `.vma` backup before reinstall |
-| `ala-pve01` renamed to `pve01` in Proxmox | 🔲 | Fresh install with correct hostname — must complete VM backups above first |
-| `pve01` static IP set to `192.168.0.51` | 🔲 | Changed from `.50`; matches sequence convention (`pve01=.51`) |
-| Both Proxmox hosts patched and rebooted | 🔲 | |
-| SSH key access configured on both hosts | 🔲 | |
-| Firewall posture defined | 🔲 | |
-| Debian 12 VM template created | 🔲 | |
-| Template successfully cloned to test VM | 🔲 | |
-| Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
-| `docs/operations/proxmox-baseline.md` written | 🔲 | |
-
----
-
 ## Pre-req: TrueNAS Scale Install
 
 **Objective:** Install TrueNAS Scale on the Terramaster F4-424 Pro, create the RAIDZ1 data pool with 3x 8TB HDDs, and establish the dataset hierarchy. Must complete before Milestone 2 — the PBS datastore NFS share depends on this pool existing.
@@ -165,6 +145,26 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
 | Ansible documented for day-2 config tasks | 🔲 | |
 | Install process and dataset hierarchy decisions documented | 🔲 | |
+
+---
+
+## Milestone 1 — Proxmox Baseline (pve1 + pve2)
+
+**Objective:** Create a stable virtualization foundation for the homelab platform.
+
+| Item | Status | Notes |
+|---|---|---|
+| win-11-pro VM disk backed up before reinstall | 🔲 | Valid Windows license — preserve virtual hardware config on restore to avoid deactivation; use Proxmox `.vma` backup |
+| ubuntu-server VM — back up before reinstall | 🔲 | Keeping — back up via Proxmox `.vma` backup before reinstall |
+| `ala-pve01` renamed to `pve01` in Proxmox | 🔲 | Fresh install with correct hostname — must complete VM backups above first |
+| `pve01` static IP set to `192.168.0.51` | 🔲 | Changed from `.50`; matches sequence convention (`pve01=.51`) |
+| Both Proxmox hosts patched and rebooted | 🔲 | |
+| SSH key access configured on both hosts | 🔲 | |
+| Firewall posture defined | 🔲 | |
+| Debian 12 VM template created | 🔲 | |
+| Template successfully cloned to test VM | 🔲 | |
+| Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
+| `docs/operations/proxmox-baseline.md` written | 🔲 | |
 
 ---
 
