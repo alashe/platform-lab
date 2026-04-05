@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-03-29
-> **Current phase:** Milestone 0 — Lab Blueprint and Standards
+> **Last updated:** 2026-04-05
+> **Current phase:** TrueNAS Pre-req (in progress)
 
 ---
 
@@ -155,14 +155,14 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Network config complete — static IP, accessible on LAN | ✅ | `192.168.0.81` — `nas01.lab` |
 | Dataset hierarchy designed and documented in `decisions.md` | ✅ | ADR-021 — `backups/pbs`, `apps/<name>` (per-app at deploy time), `personal/` |
 | RAIDZ1 pool created with 3x 8TB HDDs | ✅ | ~14.55 TiB usable; see ADR-016 |
-| Datasets created per hierarchy design | 🔲 | Include `recordsize=16K` on PBS datastore dataset |
-| NFS share for PBS datastore configured | 🔲 | Target: `tank/backups/pbs` or equivalent |
-| NFS share accessible from Proxmox network | 🔲 | |
+| Datasets created per hierarchy design | ✅ | `apps`, `backups`, `backups/pbs`, `personal` — managed via Terraform |
+| NFS share for PBS datastore configured | ✅ | `tank/backups/pbs` — restricted to pbs01 (192.168.0.63) via Ansible |
+| NFS share accessible from Proxmox network | 🔲 | Verify when PBS is configured in M2 |
 | Snapshot schedule configured | 🔲 | |
 | Scrub schedule configured | 🔲 | |
 | Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
-| All post-pool dataset config committed to Terraform | 🔲 | Everything above pool creation is reproducible from code |
-| NFS shares and user accounts managed via Ansible | 🔲 | Provider does not manage shares; Ansible covers via REST API or `midclt` |
+| All post-pool dataset config committed to Terraform | ✅ | Dataset hierarchy managed via `terraform/modules/truenas` |
+| NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
 | Ansible documented for day-2 config tasks | 🔲 | |
 | Install process and dataset hierarchy decisions documented | 🔲 | |
 
