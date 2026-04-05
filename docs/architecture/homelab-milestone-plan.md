@@ -78,10 +78,10 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | VM | Node | Purpose |
 |---|---|---|
-| Utility VM | pve1 | Primary service runtime — Docker · Pi-hole · nginx target |
-| Monitoring VM | pve2 | Observability — must be on separate node from Utility VM |
-| PBS VM | pve1 | Proxmox Backup Server |
-| Automation VM | pve2 | Ansible execution · Terraform workspace |
+| Utility VM | pve01 | Primary service runtime — Docker · Pi-hole · nginx target |
+| Monitoring VM | pve02 | Observability — must be on separate node from Utility VM |
+| PBS VM | pve01 | Proxmox Backup Server |
+| Automation VM | pve02 | Ansible execution · Terraform workspace |
 
 **HP Elitedesk 800 mini (bare metal — not a Proxmox node):**
 
