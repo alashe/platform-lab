@@ -144,7 +144,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | All post-pool dataset config committed to Terraform | ✅ | Dataset hierarchy managed via `terraform/modules/truenas` |
 | NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
 | Ansible documented for day-2 config tasks | 🔲 | |
-| Install process and dataset hierarchy decisions documented | 🔲 | |
+| Install process and dataset hierarchy decisions documented | ✅ | `docs/operations/truenas-setup.md`; dataset hierarchy in ADR-021 |
 
 ---
 
