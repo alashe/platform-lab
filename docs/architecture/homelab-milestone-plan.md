@@ -226,6 +226,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `terraform fmt`, `validate`, `plan`, `apply`, `destroy` workflow documented | 🔲 | |
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
+| SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`) both use workstation key during pre-req/M1 development; must be updated when `auto01` becomes the execution host |
 
 ---
 
