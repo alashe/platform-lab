@@ -143,7 +143,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
 | All post-pool dataset config committed to Terraform | ✅ | Dataset hierarchy managed via `terraform/modules/truenas` |
 | NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
-| Ansible documented for day-2 config tasks | 🔲 | |
+| Ansible documented for day-2 config tasks | ✅ | `docs/operations/truenas-day2.md` |
 | Install process and dataset hierarchy decisions documented | ✅ | `docs/operations/truenas-setup.md`; dataset hierarchy in ADR-021 |
 
 ---
