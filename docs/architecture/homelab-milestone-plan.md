@@ -4,7 +4,7 @@ Authoritative milestone plan for the `platform-lab` project.
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
 > **Last updated:** 2026-04-05
-> **Current phase:** TrueNAS Pre-req (in progress)
+> **Current phase:** Milestone 1 — Proxmox Baseline (in progress)
 
 ---
 
@@ -148,14 +148,14 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ---
 
-## Milestone 1 — Proxmox Baseline (pve1 + pve2)
+## Milestone 1 — Proxmox Baseline (pve01 + pve02)
 
 **Objective:** Create a stable virtualization foundation for the homelab platform.
 
 | Item | Status | Notes |
 |---|---|---|
-| win-11-pro VM disk backed up before reinstall | 🔲 | Valid Windows license — preserve virtual hardware config on restore to avoid deactivation; use Proxmox `.vma` backup |
-| ubuntu-server VM — back up before reinstall | 🔲 | Keeping — back up via Proxmox `.vma` backup before reinstall |
+| win-11-pro VM disk backed up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
+| ubuntu-server VM — back up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
 | `ala-pve01` renamed to `pve01` in Proxmox | 🔲 | Fresh install with correct hostname — must complete VM backups above first |
 | `pve01` static IP set to `192.168.0.51` | 🔲 | Changed from `.50`; matches sequence convention (`pve01=.51`) |
 | Both Proxmox hosts patched and rebooted | 🔲 | |
