@@ -42,6 +42,21 @@ Installed on all managed hosts by the `baseline` role.
 
 ---
 
+## Firewall — Proxmox Hosts (pve01 / pve02)
+
+The Proxmox built-in firewall is **disabled** on both nodes. The home LAN is trusted — there is no external exposure and no VLAN segmentation at this phase. This is a conscious decision, not an oversight.
+
+| Port | Service | Notes |
+|---|---|---|
+| 8006 | Proxmox web UI (HTTPS) | LAN access only |
+| 22 | SSH | LAN access only — key auth enforced manually pre-Ansible |
+| 5905+ | SPICE/VNC console | LAN access only |
+| 5404, 5405 | Corosync cluster traffic | pve01 ↔ pve02 only |
+
+> Revisit if the network is ever segmented with VLANs or if the nodes are exposed beyond the LAN.
+
+---
+
 ## Firewall — ufw
 
 Default policy applied to all managed hosts. Per-host port allowances are defined in `host_vars`.

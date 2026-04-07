@@ -162,7 +162,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `pve01` static IP set to `192.168.0.51` | ✅ | 2026-04-05 |
 | Both Proxmox hosts patched and rebooted | 🔲 | |
 | SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
-| Firewall posture defined | 🔲 | |
+| Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
 | Debian 12 VM template created | 🔲 | |
 | Template successfully cloned to test VM | 🔲 | |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
