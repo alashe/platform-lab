@@ -157,7 +157,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | win-11-pro VM disk backed up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
-| ubuntu-server VM — back up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
+| ubuntu-server VM — back up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 · VM deleted 2026-04-07, backup removed from NAS |
 | `ala-pve01` renamed to `pve01` in Proxmox | ✅ | Fresh install with correct hostname — 2026-04-05 |
 | `pve01` static IP set to `192.168.0.51` | ✅ | 2026-04-05 |
 | Both Proxmox hosts patched and rebooted | 🔲 | |

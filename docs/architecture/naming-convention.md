@@ -57,10 +57,9 @@ This document is written at Milestone 0. Apply these names at first configuratio
 
 | Hostname | VM ID | Role |
 |---|---|---|
-| `ubuntu01` | 112 | Retained personal Ubuntu Server VM from pre-platform setup |
 | `win01` | 111 | Retained Windows 11 Pro VM from pre-platform setup |
 
-> These VMs coexist on the cluster but are outside the platform's automation scope. They are assigned IDs and IPs from the non-platform range to avoid conflicts with managed infrastructure.
+> This VM coexists on the cluster but is outside the platform's automation scope. It is assigned an ID and IP from the non-platform range to avoid conflicts with managed infrastructure.
 
 ### Storage Devices
 
@@ -105,7 +104,6 @@ Subnet: `<LAB_IP>/24` · Gateway: `<LAB_IP>`
 | `auto01` | `<LAB_IP>` | VMs |
 | `app01` | `<LAB_IP>` | VMs |
 | `llm01` | `<LAB_IP>` | VMs |
-| `ubuntu01` | `<LAB_IP>` | VMs (non-platform) |
 | `win01` | `<LAB_IP>` | VMs (non-platform) |
 | `nas01` | `<LAB_IP>` | Storage |
 
@@ -147,7 +145,6 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | 105 | `app01` | Apps VM |
 | 106 | `llm01` | LLM Inference VM (M12) |
 | 111 | `win01` | Retained Windows 11 Pro VM (non-platform) |
-| 112 | `ubuntu01` | Retained Ubuntu Server VM (non-platform) |
 
 Reserved ranges:
 

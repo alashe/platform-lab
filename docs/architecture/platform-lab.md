@@ -86,9 +86,8 @@ The design principle is **operational realism over complexity**: every layer exi
 | VM | Node | Notes |
 |---|---|---|
 | `win01` (VM ID 111) | pve01 | Retained from pre-platform setup · personal use |
-| `ubuntu01` (VM ID 112) | pve01 | Retained from pre-platform setup · personal use |
 
-> These VMs coexist on the cluster but are outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
+> This VM coexists on the cluster but is outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
 
 **HP Elitedesk 800 mini — bare-metal roles:**
 
