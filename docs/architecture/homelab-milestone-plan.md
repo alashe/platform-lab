@@ -311,6 +311,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | Router DHCP configured — Utility VM as primary DNS | 🔲 | |
+| Update win01 DNS from `192.168.0.1` to `192.168.0.61` (Pi-hole) | 🔲 | Windows Settings → Network & Internet → Ethernet → Edit |
 | Router DHCP configured — EliteDesk as secondary DNS | 🔲 | |
 | DNS resolution verified across multiple device types | 🔲 | |
 | Network devices appearing in Pi-hole logs | 🔲 | |
