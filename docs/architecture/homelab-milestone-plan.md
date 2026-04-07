@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-05
-> **Current phase:** Milestone 1 — Proxmox Baseline (in progress)
+> **Last updated:** 2026-04-06
+> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · non-platform VMs restored to pve01
 
 ---
 
@@ -119,9 +119,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ---
 
-## Pre-req: TrueNAS Scale Install
+## Pre-req: TrueNAS Scale Install ✅ Complete 2026-04-06
 
 **Objective:** Install TrueNAS Scale on the Terramaster F4-424 Pro, create the RAIDZ1 data pool with 3x 8TB HDDs, and establish the dataset hierarchy. Must complete before Milestone 2 — the PBS datastore NFS share depends on this pool existing.
+
+> **NFS share verification** (one remaining item) is intentionally deferred to Milestone 2 when PBS is configured.
 
 > **Why a named pre-req and not a milestone:** The TrueNAS install is not a Proxmox VM operation and does not depend on the cluster being built. It can proceed in parallel with or before Milestone 1. Naming it explicitly prevents it from being silently assumed.
 
@@ -156,15 +158,15 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | win-11-pro VM disk backed up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
 | ubuntu-server VM — back up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 |
-| `ala-pve01` renamed to `pve01` in Proxmox | 🔲 | Fresh install with correct hostname — must complete VM backups above first |
-| `pve01` static IP set to `192.168.0.51` | 🔲 | Changed from `.50`; matches sequence convention (`pve01=.51`) |
+| `ala-pve01` renamed to `pve01` in Proxmox | ✅ | Fresh install with correct hostname — 2026-04-05 |
+| `pve01` static IP set to `192.168.0.51` | ✅ | 2026-04-05 |
 | Both Proxmox hosts patched and rebooted | 🔲 | |
-| SSH key access configured on both hosts | 🔲 | |
+| SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
 | Firewall posture defined | 🔲 | |
 | Debian 12 VM template created | 🔲 | |
 | Template successfully cloned to test VM | 🔲 | |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
-| `docs/operations/proxmox-baseline.md` written | 🔲 | |
+| `docs/operations/proxmox-baseline.md` written | 🔄 | In progress — review and finalize at end of M1 |
 
 ---
 
@@ -176,7 +178,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| PBS VM provisioned on pve1 | 🔲 | |
+| PBS VM provisioned on pve01 | 🔲 | |
 | Scheduled VM backup jobs configured | 🔲 | |
 | First backup completed and verified | 🔲 | |
 | PBS datastore pointed at NAS NFS share | 🔲 | `tank/pbs` — RAIDZ1 HDD pool (see ADR-016) |
@@ -194,7 +196,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| Automation VM provisioned manually on pve2 | 🔲 | Bootstrap exception — Terraform cannot provision its own execution host |
+| Automation VM provisioned manually on pve02 | 🔲 | Bootstrap exception — Terraform cannot provision its own execution host |
 | Debian 12 installed and accessible via SSH | 🔲 | |
 | Baseline host security configured on Automation VM | 🔲 | |
 | Ansible installed and functional on Automation VM | 🔲 | |
@@ -273,11 +275,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ## Milestone 7 — Monitoring Layer (Proxmox VM)
 
-**Objective:** Deploy monitoring infrastructure on pve2. Monitor all current hosts including EliteDesk.
+**Objective:** Deploy monitoring infrastructure on pve02. Monitor all current hosts including EliteDesk.
 
 | Item | Status | Notes |
 |---|---|---|
-| Monitoring VM provisioned on pve2 | 🔲 | Separate node from Utility VM (pve1) |
+| Monitoring VM provisioned on pve02 | 🔲 | Separate node from Utility VM (pve01) |
 | Prometheus running, scraping all hosts | 🔲 | Utility VM · EliteDesk · Automation VM |
 | node_exporter on all managed hosts | 🔲 | |
 | cAdvisor on Utility VM and EliteDesk | 🔲 | |

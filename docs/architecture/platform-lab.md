@@ -85,8 +85,8 @@ The design principle is **operational realism over complexity**: every layer exi
 
 | VM | Node | Notes |
 |---|---|---|
-| `ubuntu01` (VM ID 110) | pve01 or pve02 | Retained from pre-platform setup · personal use |
-| `win01` (VM ID 111) | pve01 or pve02 | Retained from pre-platform setup · personal use |
+| `win01` (VM ID 111) | pve01 | Retained from pre-platform setup · personal use |
+| `ubuntu01` (VM ID 112) | pve01 | Retained from pre-platform setup · personal use |
 
 > These VMs coexist on the cluster but are outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
 

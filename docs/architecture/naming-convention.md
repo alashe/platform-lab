@@ -57,7 +57,7 @@ This document is written at Milestone 0. Apply these names at first configuratio
 
 | Hostname | VM ID | Role |
 |---|---|---|
-| `ubuntu01` | 110 | Retained personal Ubuntu Server VM from pre-platform setup |
+| `ubuntu01` | 112 | Retained personal Ubuntu Server VM from pre-platform setup |
 | `win01` | 111 | Retained Windows 11 Pro VM from pre-platform setup |
 
 > These VMs coexist on the cluster but are outside the platform's automation scope. They are assigned IDs and IPs from the non-platform range to avoid conflicts with managed infrastructure.
@@ -146,8 +146,8 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | 104 | `auto01` | Automation VM |
 | 105 | `app01` | Apps VM |
 | 106 | `llm01` | LLM Inference VM (M12) |
-| 110 | `ubuntu01` | Retained Ubuntu Server VM (non-platform) |
 | 111 | `win01` | Retained Windows 11 Pro VM (non-platform) |
+| 112 | `ubuntu01` | Retained Ubuntu Server VM (non-platform) |
 
 Reserved ranges:
 

@@ -11,12 +11,12 @@ flowchart TD
     GIT["Git Repository\nplatform-lab"]
   end
 
-  subgraph Proxmox["Homelab — Proxmox Cluster (pve1 · pve2)"]
-    subgraph pve1["pve1 — Dell Precision 7550"]
+  subgraph Proxmox["Homelab — Proxmox Cluster (pve01 · pve02)"]
+    subgraph pve01["pve01 — Dell Precision 7550"]
       UVM["Utility VM\nDocker: Pi-hole · nginx target"]
       PBS["PBS VM\nProxmox Backup Server"]
     end
-    subgraph pve2["pve2 — Dell Precision 7560"]
+    subgraph pve02["pve02 — Dell Precision 7560"]
       MVM["Monitoring VM\nPrometheus · Grafana · Alertmanager\nLoki · Uptime Kuma"]
       AVM["Automation VM\nAnsible execution\nTerraform workspace"]
     end
@@ -61,8 +61,8 @@ flowchart TD
   AVM --> PBS
   PBS --> NAS --> COLD
 
-  QD -.->|"quorum vote"| pve1
-  QD -.->|"quorum vote"| pve2
+  QD -.->|"quorum vote"| pve01
+  QD -.->|"quorum vote"| pve02
 ```
 
 ---
@@ -95,7 +95,7 @@ flowchart LR
   end
 
   subgraph Primary["Primary DNS"]
-    UVM["Utility VM\nPi-hole\npve1"]
+    UVM["Utility VM\nPi-hole\npve01"]
   end
 
   subgraph Secondary["Secondary DNS (failover)"]
@@ -121,7 +121,7 @@ flowchart LR
     EXT["External\nDNS upstream"]
   end
 
-  subgraph Stack["Monitoring VM (pve2)"]
+  subgraph Stack["Monitoring VM (pve02)"]
     PROM["Prometheus\nmetrics + rules"]
     UK["Uptime Kuma\nendpoint checks"]
     LOKI["Loki\nlogs"]
@@ -154,7 +154,7 @@ flowchart LR
 ```mermaid
 flowchart TD
   VMs["VMs: Utility · Monitoring · Automation"]
-  PBS["Proxmox Backup Server\npve1"]
+  PBS["Proxmox Backup Server\npve01"]
   NAS["NAS\nwarm storage"]
   COLD["Cold Tier\noffsite / S3 Glacier"]
 

@@ -19,10 +19,10 @@ The service count does not justify the operational overhead of a container orche
 
 ## ADR-002 — Monitoring VM is separate from Utility VM
 
-**Decision:** Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma run on a dedicated VM on pve2.
+**Decision:** Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma run on a dedicated VM on pve02.
 
 **Reasoning:**  
-Observability should not share a failure domain with the services it monitors. If the Utility VM (pve1) goes down, the Monitoring VM (pve2) continues running and alerting. This separation also allows the Monitoring VM to migrate between Proxmox hosts independently.
+Observability should not share a failure domain with the services it monitors. If the Utility VM (pve01) goes down, the Monitoring VM (pve02) continues running and alerting. This separation also allows the Monitoring VM to migrate between Proxmox hosts independently.
 
 **Rejected:** Running the monitoring stack alongside Pi-hole and the monitoring target on the Utility VM.
 
@@ -30,10 +30,10 @@ Observability should not share a failure domain with the services it monitors. I
 
 ## ADR-003 — Ansible manages all hosts from a dedicated Automation VM
 
-**Decision:** Ansible execution runs from the Automation VM on pve2. The Fedora workstation is used for local development only and does not run applies against live infrastructure.
+**Decision:** Ansible execution runs from the Automation VM on pve02. The Fedora workstation is used for local development only and does not run applies against live infrastructure.
 
 **Reasoning:**  
-A dedicated automation host separates code development from execution against live infrastructure. The Automation VM runs 24/7 and can be triggered by CI, scheduled jobs, or manual runs without requiring a developer workstation to be available. It is itself managed by Ansible, demonstrating the pattern of treating automation infrastructure as code. Placing it on pve2 means it survives a pve1 failure.
+A dedicated automation host separates code development from execution against live infrastructure. The Automation VM runs 24/7 and can be triggered by CI, scheduled jobs, or manual runs without requiring a developer workstation to be available. It is itself managed by Ansible, demonstrating the pattern of treating automation infrastructure as code. Placing it on pve02 means it survives a pve01 failure.
 
 **Rejected:** Running all Ansible execution from the developer workstation (no always-on host, no CI integration path).
 
@@ -109,10 +109,10 @@ Config built only in the UI is lost when the Monitoring VM is rebuilt. Storing J
 
 ## ADR-009 — Automation VM for Ansible and Terraform execution
 
-**Decision:** A dedicated Automation VM on pve2 handles all Ansible and Terraform execution against live infrastructure.
+**Decision:** A dedicated Automation VM on pve02 handles all Ansible and Terraform execution against live infrastructure.
 
 **Reasoning:**  
-Separating execution from development provides a stable, always-on automation host that can be triggered by CI or scheduled jobs. It also means the EliteDesk does not need to serve as a control plane, keeping its roles clean (QDevice + bare-metal utility node). The Automation VM is placed on pve2 so it remains available if pve1 fails. It is managed by Ansible itself.
+Separating execution from development provides a stable, always-on automation host that can be triggered by CI or scheduled jobs. It also means the EliteDesk does not need to serve as a control plane, keeping its roles clean (QDevice + bare-metal utility node). The Automation VM is placed on pve02 so it remains available if pve01 fails. It is managed by Ansible itself.
 
 **Bootstrap:** The Automation VM is the one exception to the rule that Terraform provisions all Proxmox VMs. It must be provisioned manually — Terraform cannot provision the machine it runs from. All other Proxmox VMs go through Terraform.
 
@@ -168,7 +168,7 @@ The CI/CD pipeline introduced at Milestone 5 includes a `terraform apply` stage 
 **Decision:** PBS writes its datastore to an NFS share hosted on the NAS rather than to local Proxmox storage.
 
 **Reasoning:**
-Storing the PBS datastore on the NAS means VM backups receive ZFS checksumming and snapshot protection automatically. It also makes the NAS the single aggregation point for the 3-2-1 backup chain — both personal data and VM backups flow through one device to offsite cold storage. This approach is host-independent: the PBS VM on pve1 can be migrated or restored without losing access to its datastore.
+Storing the PBS datastore on the NAS means VM backups receive ZFS checksumming and snapshot protection automatically. It also makes the NAS the single aggregation point for the 3-2-1 backup chain — both personal data and VM backups flow through one device to offsite cold storage. This approach is host-independent: the PBS VM on pve01 can be migrated or restored without losing access to its datastore.
 
 **Pool:** The NFS share is hosted on the 3x 8TB RAIDZ1 pool — see ADR-016. ZFS checksumming and snapshot protection apply to all PBS datastore writes.
 
