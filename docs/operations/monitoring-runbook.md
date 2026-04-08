@@ -1,5 +1,7 @@
 # Monitoring Runbook
 
+> **Status: Written ahead of build (Milestone 7).** Procedures described here assume the full observability stack is deployed and running. Verify against live infrastructure when Milestone 7 is complete and remove this notice.
+
 Reference for the observability stack: what's running, how to use it, and how to respond to alerts.
 
 ---
@@ -197,6 +199,72 @@ For Uptime Kuma monitors, pause the monitor during maintenance:
 Uptime Kuma UI → select monitor → **Pause**.
 
 Remove silence / unpause when maintenance is complete.
+
+---
+
+## Monitoring Stack Is Down
+
+`mon01` runs on `pve02` with its disk on the `nfs-shared` NFS pool. Proxmox HA (`migrate` policy) live-migrates `mon01` to `pve01` automatically if `pve02` fails — no operator action required, no monitoring gap.
+
+If you are seeing a monitoring outage, work through these cases:
+
+### Case 1 — pve02 node failure (expected: auto-recovery)
+
+Proxmox HA detects the failure and migrates `mon01` to `pve01`. Check HA status:
+
+- Datacenter → HA → Resources — `mon01` should show `started` on `pve01` within ~30 seconds
+- Grafana at `http://monitoring-vm:3000` should be accessible once migration completes
+
+If HA recovery stalls (status stuck at `recovery` for > 2 minutes):
+
+```bash
+# From workstation or auto01 — check cluster and HA status
+ssh pve01
+pvesh get /cluster/ha/status/current
+```
+
+If `mon01` failed to start on `pve01`, start it manually:
+
+```bash
+qm start <vmid>   # get vmid from: pvesh get /nodes/pve01/qemu
+```
+
+### Case 2 — mon01 Docker stack issue (pve02 healthy, mon01 running, services down)
+
+The VM is up but containers have crashed. Check and recover:
+
+```bash
+ssh mon01
+docker compose -f /opt/services/monitoring/docker-compose.yml ps
+docker compose -f /opt/services/monitoring/docker-compose.yml up -d
+docker compose -f /opt/services/monitoring/docker-compose.yml ps   # verify all running
+```
+
+Check logs if a container won't start:
+
+```bash
+docker logs <container_name> --tail 50
+```
+
+### Case 3 — NAS (nas01) unreachable
+
+`mon01`'s disk is on the `nfs-shared` NFS pool hosted on `nas01`. If `nas01` goes offline, `mon01`'s disk becomes unavailable and the VM will freeze or fail.
+
+```bash
+# From pve02 — check NFS mount
+df -h | grep nfs
+ping 192.168.0.81   # nas01
+```
+
+Restore NAS connectivity first. Once `nas01` is reachable, `mon01` should recover automatically. If the VM is in an error state:
+
+```bash
+# Force stop and restart (from pve02 or pve01)
+qm stop <vmid> --skiplock
+qm start <vmid>
+```
+
+> **Note:** This is the accepted trade-off for NFS-backed VM storage (ADR-023). A NAS failure affects monitoring but not `util01`, `pbs01`, or `auto01`.
 
 ---
 

@@ -114,7 +114,12 @@ Config built only in the UI is lost when the Monitoring VM is rebuilt. Storing J
 **Reasoning:**  
 Separating execution from development provides a stable, always-on automation host that can be triggered by CI or scheduled jobs. It also means the EliteDesk does not need to serve as a control plane, keeping its roles clean (QDevice + bare-metal utility node). The Automation VM is placed on pve02 so it remains available if pve01 fails. It is managed by Ansible itself.
 
-**Bootstrap:** The Automation VM is the one exception to the rule that Terraform provisions all Proxmox VMs. It must be provisioned manually — Terraform cannot provision the machine it runs from. All other Proxmox VMs go through Terraform.
+**Bootstrap exceptions:** Two Proxmox VMs are provisioned manually rather than through Terraform:
+
+- `auto01` — must exist before Terraform can run; a circular dependency makes it impossible for Terraform to provision its own execution host. `auto01` is a **permanent Terraform exception** — it is never imported into state. Importing it would allow `terraform destroy` to remove the machine running Terraform.
+- `pbs01` — provisioned manually at M2 so that backups exist before the rest of the platform is built. Unlike `auto01`, `pbs01` is imported into Terraform state at M4 (`terraform import`) so future rebuilds go through Terraform. After import, `terraform plan` should show no changes.
+
+All other Proxmox VMs go through Terraform.
 
 **Workflow:** The Fedora workstation is used for development and pushes to Git. CI or the Automation VM handles execution against live environments.
 
@@ -311,6 +316,7 @@ Internal admin UIs (Proxmox, TrueNAS, PBS, Grafana) are single-operator, LAN-onl
 tank/
 ├── backups/
 │   └── pbs/          recordsize=16K  — PBS datastore
+├── proxmox-shared/   recordsize=128K — Shared NFS pool for live VM migration (mon01 only)
 ├── apps/             ← one dataset per app, created at deploy time
 └── personal/
     ├── music/
@@ -323,6 +329,7 @@ tank/
 | Dataset | recordsize | compression | snapshots |
 |---|---|---|---|
 | `tank/backups/pbs` | 16K | lz4 | No — PBS manages its own retention |
+| `tank/proxmox-shared` | 128K | lz4 | No — VM disk managed by Proxmox; PBS handles backup |
 | `tank/apps/<name>` | 128K (default) | lz4 | Yes — daily, keep 14 |
 | `tank/personal/*` | 1M | lz4 | Yes — daily, keep 30 |
 
@@ -348,3 +355,46 @@ Per-dataset structure gives snapshot and quota granularity at the app level with
 A second P310 was originally purchased as temporary data storage before the 3x 8TB HDDs were committed to. With the data pool now planned as RAIDZ1 on HDDs, the second P310 has no role in the data pool. Mirroring the boot pool is the correct use — it costs nothing extra and protects against OS drive failure without requiring a reinstall.
 
 **Rejected:** Using the second P310 as a separate data volume or cache device — unnecessary given the RAIDZ1 data pool covers all storage requirements.
+
+---
+
+## ADR-022 — Proxmox HA with live migration for mon01
+
+**Decision:** Enable Proxmox High Availability (HA) on the Monitoring VM (`mon01`), with restart policy set to `migrate`. `mon01`'s disk is stored on a shared NFS storage pool backed by `nas01`, enabling zero-downtime live migration between nodes.
+
+**Reasoning:**
+ADR-002 places `mon01` on `pve02` to keep observability independent of the services it monitors on `pve01`. This protects against `pve01` failures but leaves a gap: if `pve02` fails, monitoring is lost until the node recovers or `mon01` is manually restored.
+
+Proxmox HA closes the gap. With `mon01`'s disk on NFS-backed shared storage (see ADR-023), both nodes have simultaneous access to the VM disk. When `pve02` fails, Proxmox live-migrates `mon01` to `pve01` with zero monitoring downtime. The cluster supports this because `qdev01` provides a third quorum vote — quorum is maintained when one node fails (ADR-007).
+
+**Migrate policy vs. restart policy:**
+`migrate` (live migration) requires shared storage accessible from both nodes simultaneously — provided by the NFS pool on `nas01` (ADR-023). `restart` would re-create the VM on the surviving node from local state, introducing a ~1–3 minute monitoring gap. With shared storage available, `migrate` is the correct policy.
+
+**Trade-off:** During a `pve02` failure, `mon01` lands on `pve01`, temporarily sharing a node with `util01`. The failure domain separation from ADR-002 is a `pve02`-specific protection; this HA configuration covers the reverse scenario. `mon01` is returned to `pve02` when `pve02` recovers.
+
+**nas01 as a VM runtime dependency:** Storing `mon01`'s disk on `nas01` means a NAS failure removes monitoring, not just backups. This is an accepted trade-off — `mon01` only; all other VMs remain on local storage. The NAS is a stable, ZFS-protected device on the same LAN.
+
+**Rejected:** Manual recovery only — monitoring gap spans the full duration of intervention. `restart` policy with local storage — automatic but introduces a monitoring gap. Ceph — requires a minimum of three nodes; over-engineered for this scale.
+
+**Setup:** ADR-023 covers the shared storage pool. Datacenter → HA → Resources → Add `mon01`, policy `migrate`. See `docs/operations/proxmox-setup.md`.
+
+---
+
+## ADR-023 — NFS-backed shared storage pool for live VM migration
+
+**Decision:** Create a dedicated NFS share on `nas01` (`tank/proxmox-shared`) and add it as a shared Proxmox storage pool on both `pve01` and `pve02`. `mon01` is the only VM stored on this pool. All other VMs remain on local Proxmox storage.
+
+**Reasoning:**
+Proxmox HA live migration (`migrate` policy) requires that both nodes can access the VM disk simultaneously. Local storage is per-node — a VM on `pve02`'s local disk cannot be migrated to `pve01` without a full copy. An NFS share mounted on both nodes provides shared access to the same disk image, enabling the cluster to live-migrate `mon01` between nodes during a node failure or planned maintenance with zero downtime.
+
+`nas01` already serves NFS to `pbs01` (ADR-012). The same mechanism — NFS share, restricted by IP — is used here. The dataset is added to the existing Terraform-managed hierarchy (ADR-021).
+
+**Scope: mon01 only.** Storing all VMs on shared NFS would make `nas01` a runtime dependency for the entire cluster. Limiting shared storage to `mon01` contains the blast radius: a NAS failure removes monitoring (acceptable) but does not touch `util01`, `pbs01`, or `auto01` (not acceptable for those services).
+
+**Dataset:** `tank/proxmox-shared` — managed via Terraform (`deevus/truenas`). See ADR-021 for full dataset hierarchy.
+
+**NFS share:** Managed via Ansible (`arensb.truenas`). Restricted to `192.168.0.51` (pve01) and `192.168.0.52` (pve02). Options: `rw,sync,no_subtree_check,no_root_squash`.
+
+**Proxmox storage pool:** Added on both nodes via Datacenter → Storage → Add → NFS. Pool name: `nfs-shared`. Content type: `Disk image`. See `docs/operations/proxmox-setup.md`.
+
+**Rejected:** Ceph — requires three nodes minimum for production; over-engineered for this scale. Shared storage for all VMs — makes NAS a hard runtime dependency for the whole cluster. iSCSI — higher complexity than NFS for the same outcome in this topology.

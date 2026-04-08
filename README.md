@@ -16,6 +16,7 @@ A self-managed platform that mirrors a production engineering workflow:
 - Uptime Kuma providing endpoint availability monitoring and a status page
 - Pi-hole DNS with automatic failover across two hosts
 - A tiered backup architecture with documented recovery procedures
+- Proxmox HA with live migration for the Monitoring VM — zero-downtime failover on node failure, backed by NFS shared storage on the NAS
 
 No Kubernetes. Intentionally scoped to what a small ops team actually runs.
 
@@ -24,22 +25,24 @@ No Kubernetes. Intentionally scoped to what a small ops team actually runs.
 ## Architecture
 
 ```
-Proxmox Cluster (pve1 + pve2)
-├── Utility VM (pve1)       Docker · Pi-hole (primary DNS) · nginx target
-├── Monitoring VM (pve2)    Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma
-├── PBS VM (pve1)           Proxmox Backup Server → NAS → cold storage
-└── Automation VM (pve2)    Ansible execution · Terraform workspace
+Proxmox Cluster (pve01 + pve02)
+├── Utility VM      (pve01)   Docker · Pi-hole (primary DNS) · nginx target
+├── Monitoring VM   (pve02)   Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma
+│                             HA: live migration to pve01 on node failure (NFS-backed disk)
+├── PBS VM          (pve01)   Proxmox Backup Server → NAS → cold storage
+└── Automation VM   (pve02)   Ansible execution · Terraform workspace
 
+NAS (nas01 · TrueNAS Scale)   ZFS RAIDZ1 · PBS datastore · shared VM storage pool
 HP Elitedesk 800 mini (bare metal)
-├── Corosync QDevice        Quorum tie-breaker for 2-node cluster
-└── Docker                  Pi-hole (secondary DNS) · nginx target — mirrors Utility VM
+├── Corosync QDevice          Quorum tie-breaker for 2-node cluster
+└── Docker                    Pi-hole (secondary DNS) · nginx target — mirrors Utility VM
 
-Fedora Workstation          Local Ansible + Terraform development
+Fedora Workstation            Local Ansible + Terraform development
 
 AWS (Terraform-managed)
 ├── VPC + Security Group
-├── EC2 instance            Debian · Docker · nginx (mirrors homelab)
-└── IAM instance profile    least-privilege
+├── EC2 instance              Debian · Docker · nginx (mirrors homelab)
+└── IAM instance profile      least-privilege
 ```
 
 → Full architecture: [`docs/architecture/platform-lab.md`](docs/architecture/platform-lab.md)
@@ -123,4 +126,4 @@ Workflow files: [`.github/workflows/`](.github/workflows/)
 
 ## Skills Demonstrated
 
-`Linux` `Bash` `Docker` `Ansible` `Terraform` `AWS EC2` `Prometheus` `Grafana` `Loki` `Uptime Kuma` `Proxmox`
+`Linux` `Bash` `Docker` `Ansible` `Terraform` `AWS EC2` `Prometheus` `Grafana` `Loki` `Uptime Kuma` `Proxmox` `Proxmox HA` `ZFS` `NFS`

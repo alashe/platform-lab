@@ -1,5 +1,7 @@
 # Backup & Restore
 
+> **Status: Written ahead of build (Milestone 2).** The PBS VM has not yet been provisioned. Procedures described here assume a fully operational backup chain. Verify schedules, restore paths, and RTO/RPO targets against live infrastructure when Milestone 2 is complete and remove this notice.
+
 Backup architecture, schedules, verification, and restore procedures.
 
 ---
@@ -24,8 +26,8 @@ Backblaze B2  (offsite cold)
 
 | Metric | Target | Last Verified |
 |---|---|---|
-| RTO — full VM restore from PBS | < 30 minutes | — |
-| RPO — maximum data loss | 24 hours | — |
+| RTO — full VM restore from PBS | < 30 minutes | Populate after first successful restore drill (Milestone 2) |
+| RPO — maximum data loss | 24 hours | Populate after backup schedule confirmed running (Milestone 2) |
 
 ---
 
@@ -128,7 +130,7 @@ Expected time: under 15 minutes.
 
 ### Recover Terraform state (if S3 bucket is lost)
 
-1. Recreate the S3 bucket and DynamoDB table (see `terraform/backend/backend-notes.md`)
+1. Recreate the S3 bucket and native S3 locking configuration (see `terraform/backend/backend-notes.md`)
 2. Run `terraform import` for each existing resource to rebuild state
 3. Run `terraform plan` — should show no changes if import was correct
 

@@ -1,5 +1,7 @@
 # Incident Scenarios
 
+> **Status: Written ahead of build (Milestone 11).** These scenarios assume a fully running platform with monitoring active. Complete Milestones 1–10 before running drills. Remove this notice when Milestone 11 begins.
+
 Practice exercises for operational troubleshooting. Each scenario maps to a real interview story.
 
 Run these deliberately. Take notes. Time yourself. Write a brief post-mortem afterward.
@@ -206,3 +208,13 @@ Root cause:
 Resolution:
 Follow-up actions:  (alert rule improvement, runbook update, etc.)
 ```
+
+## Post-Mortem Storage
+
+Save each completed post-mortem as a file in `docs/operations/post-mortems/`.
+
+Naming convention: `YYYY-MM-DD-<scenario-slug>.md`
+
+Example: `2026-11-02-service-down-nginx.md`
+
+Commit each post-mortem to Git after writing it. The commit history serves as the audit trail — date, scenario, and any follow-up actions are all preserved. Review accumulated post-mortems before Milestone 11 (Reliability Drills) to identify patterns and drive alerting or runbook improvements.

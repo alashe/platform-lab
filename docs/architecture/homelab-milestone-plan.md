@@ -23,7 +23,10 @@ Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
 These rules do not change unless explicitly revised and documented in [`decisions.md`](decisions.md).
 
-- **Terraform** provisions infrastructure: AWS EC2 and Proxmox VMs — with one bootstrap exception: the Automation VM is provisioned manually because it must exist before Terraform can run. All other Proxmox VMs go through Terraform.
+- **Terraform** provisions infrastructure: AWS EC2 and Proxmox VMs — with two bootstrap exceptions:
+  - `auto01` (Automation VM) — provisioned manually because it must exist before Terraform can run. **Permanent Terraform exception** — never imported into state, as doing so would allow `terraform destroy` to remove its own execution host.
+  - `pbs01` (Backup Server) — provisioned manually at M2 because backups must exist before the rest of the platform is built. Imported into Terraform state at M4 so future rebuilds go through Terraform like all other VMs.
+  - All other Proxmox VMs go through Terraform.
 - **Ansible** configures all host types: bare-metal (EliteDesk), Proxmox VMs, AWS EC2 instances
 - Ansible roles are written to be reusable across host types wherever possible
 - **Ansible execution** runs from the Automation VM — the Fedora workstation is for development only
@@ -140,6 +143,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Datasets created per hierarchy design | ✅ | `apps`, `backups`, `backups/pbs`, `personal` — managed via Terraform |
 | NFS share for PBS datastore configured | ✅ | `tank/backups/pbs` — restricted to pbs01 (192.168.0.63) via Ansible |
 | NFS share accessible from Proxmox network | 🔲 | Verify when PBS is configured in M2 |
+| `tank/proxmox-shared` dataset created | 🔲 | Shared NFS pool for Proxmox live migration — see ADR-023 |
+| NFS share for `tank/proxmox-shared` configured | 🔲 | Restricted to pve01 (192.168.0.51) and pve02 (192.168.0.52) via Ansible |
 | Snapshot schedule configured | ✅ | Daily snapshots: `tank/backups/pbs` (7-day retention), `tank/personal` (4-week retention) — via Ansible |
 | Scrub schedule configured | ✅ | Monthly scrub of `tank` pool (weekly check, 30-day threshold) — via Ansible |
 | Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
@@ -166,7 +171,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Debian 12 VM template created | 🔲 | |
 | Template successfully cloned to test VM | 🔲 | |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
-| `docs/operations/proxmox-baseline.md` written | 🔄 | In progress — review and finalize at end of M1 |
+| `nfs-shared` Proxmox storage pool added on pve01 and pve02 | 🔲 | NFS mount of `tank/proxmox-shared` on nas01 — prerequisite for mon01 live migration (M7) |
+| `docs/operations/proxmox-setup.md` written | 🔄 | In progress — review and finalize at end of M1 |
 
 ---
 
@@ -186,6 +192,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `scripts/restore-check.sh` written | 🔲 | |
 | `make restore-test` functional | 🔲 | |
 | Restore test verified — RTO measured | 🔲 | |
+| `docs/operations/pbs01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
 | `docs/operations/backup-restore.md` reflects actual state | 🔄 | Doc written; lab not yet built |
 
 ---
@@ -205,6 +212,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Debian 12 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
+| `docs/operations/auto01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
 | `docs/operations/utility-node.md` scaffolded | 🔲 | Full content added after M4 when Utility VM exists |
 
 ---
@@ -228,6 +236,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `terraform fmt`, `validate`, `plan`, `apply`, `destroy` workflow documented | 🔲 | |
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
+| `pbs01` imported into Terraform state | 🔲 | `terraform import proxmox_vm_qemu.pbs01 <vmid>` — brings the manually-provisioned PBS VM under Terraform management; verify with `terraform plan` (should show no changes) |
 | SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`) both use workstation key during pre-req/M1 development; must be updated when `auto01` becomes the execution host |
 
 ---
@@ -279,7 +288,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| Monitoring VM provisioned on pve02 | 🔲 | Separate node from Utility VM (pve01) |
+| Monitoring VM provisioned on pve02 — disk on `nfs-shared` pool | 🔲 | Disk on shared NFS pool enables live migration (ADR-023) |
 | Prometheus running, scraping all hosts | 🔲 | Utility VM · EliteDesk · Automation VM |
 | node_exporter on all managed hosts | 🔲 | |
 | cAdvisor on Utility VM and EliteDesk | 🔲 | |
@@ -294,6 +303,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Uptime Kuma config exported as JSON to repo | 🔲 | |
 | Grafana dashboards exported as JSON to repo | 🔲 | |
 | Monitoring VM included in PBS backup schedule | 🔲 | |
+| Proxmox HA enabled for mon01 — migrate policy | 🔲 | Datacenter → HA → Resources → Add mon01 (ADR-022) |
+| HA live migration tested — reboot pve02, verify mon01 moves to pve01 with no monitoring gap | 🔲 | Interview scenario: node failure with zero-downtime monitoring failover |
 | Monitoring VM recovery verified on alternate host | 🔲 | |
 | `docs/sre/slo-definitions.md` authored — SLIs, SLO targets, error budgets defined | 🔲 | Pi-hole DNS · nginx · Prometheus · PBS — see ADR-014, ADR-015 |
 | Prometheus recording rules for SLI calculations deployed | 🔲 | `prometheus/rules/slo-recording.yml` |
