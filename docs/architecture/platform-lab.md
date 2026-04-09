@@ -89,18 +89,18 @@ The design principle is **operational realism over complexity**: every layer exi
 
 > This VM coexists on the cluster but is outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
 
-**HP Elitedesk 800 mini — bare-metal roles:**
+**qdev01 — HP EliteDesk 800 mini — bare-metal roles:**
 
 | Role | Details |
 |---|---|
 | Corosync QDevice | Provides quorum tie-breaker vote for the 2-node cluster |
-| Bare-metal utility node | Docker · Pi-hole (secondary DNS) · nginx target — mirrors Utility VM |
+| Bare-metal utility node | Docker · Pi-hole (secondary DNS) · nginx target — mirrors `util01` |
 
-> The EliteDesk is managed by the same Ansible roles as the Utility VM, demonstrating role portability across bare metal and VMs. Pi-hole on the EliteDesk is activated as secondary DNS during the whole-home cutover (Milestone 8), after the Utility VM is established as primary.
+> `qdev01` is managed by the same Ansible roles as `util01`, demonstrating role portability across bare metal and VMs. Pi-hole on `qdev01` is activated as secondary DNS during the whole-home cutover (Milestone 8), after `util01` is established as primary.
 
 **Separation requirement:** `mon01` runs on `pve02`, independent of `util01` on `pve01`, so service failures do not remove visibility or alerting.
 
-**Mobility requirement:** `mon01` must be restorable or migratable between Proxmox hosts. PBS-backed restore is sufficient for this phase.
+**Mobility requirement:** `mon01`'s disk is stored on the `nfs-shared` NFS pool (hosted on `nas01`, ADR-023), accessible from both `pve01` and `pve02` simultaneously. Proxmox HA (`migrate` policy, ADR-022) live-migrates `mon01` to `pve01` automatically if `pve02` fails — no monitoring gap. PBS backup remains the recovery path for complete loss.
 
 ---
 

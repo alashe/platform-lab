@@ -143,8 +143,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Datasets created per hierarchy design | ✅ | `apps`, `backups`, `backups/pbs`, `personal` — managed via Terraform |
 | NFS share for PBS datastore configured | ✅ | `tank/backups/pbs` — restricted to pbs01 (192.168.0.63) via Ansible |
 | NFS share accessible from Proxmox network | 🔲 | Verify when PBS is configured in M2 |
-| `tank/proxmox-shared` dataset created | 🔲 | Shared NFS pool for Proxmox live migration — see ADR-023 |
-| NFS share for `tank/proxmox-shared` configured | 🔲 | Restricted to pve01 (192.168.0.51) and pve02 (192.168.0.52) via Ansible |
+| `tank/proxmox-shared` dataset created | ✅ | Shared NFS pool for Proxmox live migration — see ADR-023; managed via Terraform — 2026-04-07 |
+| NFS share for `tank/proxmox-shared` configured | ✅ | Restricted to pve01 (192.168.0.51) and pve02 (192.168.0.52) via Ansible — 2026-04-07 |
 | Snapshot schedule configured | ✅ | Daily snapshots: `tank/backups/pbs` (7-day retention), `tank/personal` (4-week retention) — via Ansible |
 | Scrub schedule configured | ✅ | Monthly scrub of `tank` pool (weekly check, 30-day threshold) — via Ansible |
 | Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
@@ -168,10 +168,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Both Proxmox hosts patched and rebooted | 🔲 | |
 | SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
 | Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
-| Debian 12 VM template created | 🔲 | |
-| Template successfully cloned to test VM | 🔲 | |
+| Debian 12 VM template created | ✅ | pve01 — 2026-04-08 · pve02 pending |
+| Template successfully cloned to test VM | ✅ | Cloned to pbs01 (VM 103) — 2026-04-08 |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
-| `nfs-shared` Proxmox storage pool added on pve01 and pve02 | 🔲 | NFS mount of `tank/proxmox-shared` on nas01 — prerequisite for mon01 live migration (M7) |
+| `nfs-shared` Proxmox storage pool added on pve01 | ✅ | NFS mount of `tank/proxmox-shared` on nas01 — 2026-04-07 |
+| `nfs-shared` Proxmox storage pool added on pve02 | 🔲 | Prerequisite for mon01 live migration (M7) |
 | `docs/operations/proxmox-setup.md` written | 🔄 | In progress — review and finalize at end of M1 |
 
 ---
@@ -184,7 +185,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| PBS VM provisioned on pve01 | 🔲 | |
+| PBS VM provisioned on pve01 | ✅ | VM 103 · IP 192.168.0.63 · 2026-04-08 |
 | Scheduled VM backup jobs configured | 🔲 | |
 | First backup completed and verified | 🔲 | |
 | PBS datastore pointed at NAS NFS share | 🔲 | `tank/pbs` — RAIDZ1 HDD pool (see ADR-016) |
@@ -237,7 +238,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
 | `pbs01` imported into Terraform state | 🔲 | `terraform import proxmox_vm_qemu.pbs01 <vmid>` — brings the manually-provisioned PBS VM under Terraform management; verify with `terraform plan` (should show no changes) |
-| SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`) both use workstation key during pre-req/M1 development; must be updated when `auto01` becomes the execution host |
+| SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Three surfaces to update: (1) Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`); (2) Debian 12 VM template cloud-init key (`qm set 9000 --sshkeys ~/.ssh/auto01_ed25519.pub`); (3) all VMs provisioned before rotation — deploy new key via Ansible baseline and verify `fedora_ed25519` is removed from `authorized_keys` on each host |
 
 ---
 

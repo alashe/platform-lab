@@ -57,15 +57,16 @@ Root is not used for routine operations. Its password is set at OS install and s
 
 ---
 
-### Appliance Admin — `nas01`
+### `nas01` — TrueNAS Scale
 
-TrueNAS Scale manages users through its own system, not Linux PAM. Ansible does not manage accounts on this device.
+TrueNAS Scale manages users through its own system, not Linux PAM. Ansible manages the `ops` account on `nas01` via the `arensb.truenas` collection.
 
-| Device | Account | Created by |
+| Account | Created by | Purpose |
 |---|---|---|
-| `nas01` — TrueNAS Scale | `admin` (or renamed at install) | TrueNAS setup wizard |
+| `truenas_admin` | TrueNAS setup wizard | Web UI and appliance administration |
+| `ops` | Ansible `truenas` role (bootstrap: one-time manual creation) | Ansible automation account |
 
-Use a strong, unique password for each. Store in a password manager, not in the repo.
+Use a strong, unique password for `truenas_admin`. Store in a password manager, not in the repo.
 
 ---
 
@@ -80,7 +81,7 @@ Use a strong, unique password for each. Store in a password manager, not in the 
 | `mon01` | Yes | — | — | Ansible-managed VM |
 | `pbs01` | Yes | — | — | Ansible-managed VM; PBS web UI has its own auth |
 | `auto01` | Yes | — | — | Ansible-managed VM; all Ansible plays run as `ops` |
-| `nas01` | — | — | TrueNAS admin | Not Ansible-managed |
+| `nas01` | Yes (TrueNAS) | — | `truenas_admin` | `ops` managed via `arensb.truenas`; bootstrap: manual creation in TrueNAS UI |
 | `aws-web01` | Yes | — | — | Ansible-managed EC2; default cloud user superseded by `ops` |
 
 ---

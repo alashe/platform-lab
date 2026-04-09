@@ -14,21 +14,21 @@ Service Level Objectives for the `platform-lab` platform.
 
 ### What is measured
 
-The fraction of Prometheus scrape cycles in which the Pi-hole FTL exporter on the Utility VM responds successfully. A failed scrape indicates Pi-hole is unavailable or the exporter has crashed.
+The fraction of Prometheus scrape cycles in which the Pi-hole FTL exporter on the util01 responds successfully. A failed scrape indicates Pi-hole is unavailable or the exporter has crashed.
 
 Pi-hole is the most operationally significant service in the platform — it is the primary DNS resolver for the entire home network. Its failure degrades every device on the network.
 
 ### SLI definition
 
 ```
-SLI = (scrape cycles where up{job="pihole_exporter", instance="utility-vm:9617"} == 1)
+SLI = (scrape cycles where up{job="pihole_exporter", instance="util01:9617"} == 1)
     / (total scrape cycles in window)
 ```
 
 **Prometheus query (30-day availability):**
 
 ```promql
-avg_over_time(up{job="pihole_exporter", instance=~"utility-vm.*"}[30d])
+avg_over_time(up{job="pihole_exporter", instance=~"util01.*"}[30d])
 ```
 
 **Source:** Prometheus scrapes the Pi-hole FTL exporter (`pihole_exporter`) on port 9617. Scrape interval: 30s (configured in `prometheus.yml`).
@@ -108,23 +108,23 @@ groups:
 
 ### What is measured
 
-The fraction of Uptime Kuma HTTP probes that return HTTP 200 from the nginx monitoring target on the Utility VM. The nginx target is the simplest meaningful HTTP endpoint in the platform — it exists specifically to be monitored.
+The fraction of Uptime Kuma HTTP probes that return HTTP 200 from the nginx monitoring target on the util01. The nginx target is the simplest meaningful HTTP endpoint in the platform — it exists specifically to be monitored.
 
 This SLI spans the homelab environment. When the EC2 instance is active (Milestone 10), the Uptime Kuma EC2 monitor provides a parallel signal that is tracked separately.
 
 ### SLI definition
 
 ```
-SLI = (probes where nginx returns HTTP 200 on Utility VM)
+SLI = (probes where nginx returns HTTP 200 on util01)
     / (total probes in window)
 ```
 
-**Source:** Uptime Kuma probes nginx on the Utility VM every 60 seconds. Uptime Kuma exposes a Prometheus-compatible `/metrics` endpoint scraped by Prometheus.
+**Source:** Uptime Kuma probes nginx on the util01 every 60 seconds. Uptime Kuma exposes a Prometheus-compatible `/metrics` endpoint scraped by Prometheus.
 
 **Prometheus query (availability, approximated from Uptime Kuma metrics):**
 
 ```promql
-avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[30d])
+avg_over_time(monitor_status{monitor_name="nginx-util01"}[30d])
 ```
 
 > `monitor_status` is 1 when up, 0 when down. This is a direct SLI approximation.
@@ -141,7 +141,7 @@ avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[30d])
 | Error budget | 1.0% × 43,200 = **432 minutes (~7.2 hours)** |
 | Budget rate | ~14.4 minutes per day |
 
-> **Why 99.0% and not 99.5%:** nginx runs as a single Docker container on the Utility VM with no load balancer. A container restart takes ~30 seconds; a VM reboot takes longer. The 99.0% target is calibrated for a single-instance service with no redundancy layer.
+> **Why 99.0% and not 99.5%:** nginx runs as a single Docker container on the util01 with no load balancer. A container restart takes ~30 seconds; a VM reboot takes longer. The 99.0% target is calibrated for a single-instance service with no redundancy layer.
 
 ### Alertmanager rule — burn rate
 
@@ -153,7 +153,7 @@ groups:
     rules:
       - alert: NginxSLOFastBurn
         expr: |
-          (1 - avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[1h]))
+          (1 - avg_over_time(monitor_status{monitor_name="nginx-util01"}[1h]))
           / (1 - 0.990) > 14.4
         for: 5m
         labels:
@@ -167,7 +167,7 @@ groups:
 
       - alert: NginxSLOSlowBurn
         expr: |
-          (1 - avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[6h]))
+          (1 - avg_over_time(monitor_status{monitor_name="nginx-util01"}[6h]))
           / (1 - 0.990) > 3
         for: 15m
         labels:
@@ -187,7 +187,7 @@ groups:
 **Query:**
 
 ```promql
-(avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[30d]) - 0.990)
+(avg_over_time(monitor_status{monitor_name="nginx-util01"}[30d]) - 0.990)
 / (1 - 0.990) * 100
 ```
 
@@ -250,7 +250,7 @@ groups:
           summary: "Prometheus scrape reliability degraded"
           description: >
             Prometheus self-scrape is failing at a rate that exhausts the
-            30-day error budget in under 2 days. Check Monitoring VM health.
+            30-day error budget in under 2 days. Check mon01 health.
 ```
 
 > **Note:** If Prometheus itself is down, this alert cannot fire — which is why Uptime Kuma monitors Grafana availability independently (from the Uptime Kuma plan at M7). Uptime Kuma serves as the out-of-band check when the metrics pipeline fails.
@@ -391,7 +391,7 @@ groups:
 
       # nginx: 5-minute rolling availability from Uptime Kuma
       - record: monitor:nginx_up:avg5m
-        expr: avg_over_time(monitor_status{monitor_name="nginx-utility-vm"}[5m])
+        expr: avg_over_time(monitor_status{monitor_name="nginx-util01"}[5m])
 
       # Prometheus self: 5-minute rolling availability
       - record: job:prometheus_up:avg5m

@@ -86,7 +86,7 @@ Subnet: `<LAB_IP>/24` · Gateway: `<LAB_IP>`
 | `.1` | Gateway | Router (TP-Link AX1500) |
 | `.2–.9` | Network infrastructure | Switch, AP, other network gear |
 | `.10–.49` | Reserved | Do not assign |
-| `.51–.59` | Proxmox nodes + bare metal | Static — set before cluster init |
+| `.51–.59` | Proxmox nodes + bare-metal hosts | Static — set before cluster init |
 | `.61–.69` | VMs | Static — assigned at provision time |
 | `.81–.89` | Storage devices | Static |
 | `.100–.253` | DHCP pool | Dynamically assigned by router |
@@ -97,7 +97,7 @@ Subnet: `<LAB_IP>/24` · Gateway: `<LAB_IP>`
 |---|---|---|
 | `pve01` | `<LAB_IP>` | Proxmox nodes |
 | `pve02` | `<LAB_IP>` | Proxmox nodes |
-| `qdev01` | `<LAB_IP>` | Proxmox nodes / bare metal |
+| `qdev01` | `<LAB_IP>` | Bare-metal host |
 | `util01` | `<LAB_IP>` | VMs |
 | `mon01` | `<LAB_IP>` | VMs |
 | `pbs01` | `<LAB_IP>` | VMs |
@@ -164,7 +164,7 @@ Reserved ranges:
 
 | Pool | Drives | Capacity | Status |
 |---|---|---|---|
-| `tank` | 3× 8TB HDD RAIDZ1 | ~16TB usable | Drives purchased — pool pending creation |
+| `tank` | 3× 8TB HDD RAIDZ1 | ~16TB usable | Created 2026-04-02 |
 
 ### Dataset Hierarchy
 
@@ -172,26 +172,30 @@ Reserved ranges:
 
 ```
 tank/
-├── pbs         PBS datastore (NFS export to pbs01)
-├── personal    Documents · photos · music
-└── apps        Persistent volumes for app01 services
+├── backups/
+│   └── pbs/        recordsize=16K  — PBS datastore (NFS export to pbs01)
+├── proxmox-shared/ recordsize=128K — Shared NFS pool for live VM migration (mon01 only)
+├── apps/           Persistent volumes per app01 service
+└── personal/       Documents · photos · music
 ```
 
 ### ZFS Dataset Properties
 
 | Dataset | `recordsize` | Reason |
 |---|---|---|
-| `*/pbs` | `16K` | PBS chunk size — improves write performance |
-| `*/personal` | `128K` (default) | General-purpose large files |
-| `*/apps` | Set at creation | Depends on workload |
+| `tank/backups/pbs` | `16K` | PBS chunk size — improves write performance |
+| `tank/proxmox-shared` | `128K` | VM disk images — large sequential I/O |
+| `tank/personal` | `128K` (default) | General-purpose large files |
+| `tank/apps/*` | Set at creation | Depends on workload |
 
 > Set `recordsize` before writing data to a dataset. Changing it afterward does not rewrite existing blocks.
 
-### NFS Export (PBS datastore)
+### NFS Exports
 
-| NAS export path | Mount point on pbs01 | Proxmox storage ID |
-|---|---|---|
-| `/mnt/tank/pbs` | `/mnt/pbs-nfs` | `pbs-nfs` |
+| Share | NAS export path | Consumer | ID |
+|---|---|---|---|
+| PBS datastore | `/mnt/tank/backups/pbs` | pbs01 — mounted at `/mnt/pbs` | `pbs-tank` (Proxmox storage) |
+| Proxmox shared storage | `/mnt/tank/proxmox-shared` | pve01 + pve02 — mounted by Proxmox | `nfs-shared` (Proxmox storage pool) |
 
 ---
 

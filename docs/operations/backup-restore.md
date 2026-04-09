@@ -35,9 +35,10 @@ Backblaze B2  (offsite cold)
 
 | Job | Source | Destination | Schedule | Retention |
 |---|---|---|---|---|
-| VM snapshot — Utility VM | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
-| VM snapshot — Monitoring VM | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
-| VM snapshot — PBS VM | Proxmox | PBS | Weekly Sun 03:00 | 4 weekly |
+| VM snapshot — util01 | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
+| VM snapshot — mon01 | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
+| VM snapshot — pbs01 | Proxmox | PBS | Weekly Sun 03:00 | 4 weekly |
+| VM snapshot — auto01 | Proxmox | PBS | Weekly Sun 03:15 | 4 weekly |
 | NAS → Backblaze B2 (cold) | NAS | Backblaze B2 | Weekly | 90 days |
 | Terraform state | S3 backend | Versioned automatically | On every apply | S3 versioning |
 | Ansible / Terraform code | Git | Remote repository | On every push | Full history |
@@ -48,8 +49,10 @@ Backblaze B2  (offsite cold)
 
 | Asset | Method | Location |
 |---|---|---|
-| Utility VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
-| Monitoring VM | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
+| `util01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
+| `mon01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold); disk lives on `nfs-shared` — restore target must be `nfs-shared` or `local-lvm` |
+| `pbs01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) |
+| `auto01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) |
 | Grafana dashboards | JSON in Git | Repository |
 | Prometheus rules | Config in Git | Repository |
 | Ansible playbooks / roles | Git | Repository |
@@ -75,7 +78,7 @@ docker ps
 systemctl status docker
 ```
 
-7. If restoring the Utility VM, verify Pi-hole is responding:
+7. If restoring `util01`, verify Pi-hole is responding:
 
 ```bash
 # From another host on the network
@@ -86,7 +89,7 @@ dig @<utility-vm-ip> google.com
 
 ---
 
-### Restore Monitoring VM
+### Restore mon01
 
 After restoring from PBS snapshot, dashboards and config should be intact.  
 If restoring from scratch (e.g., new VM), re-provision with Ansible:

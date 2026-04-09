@@ -10,15 +10,15 @@ Reference for the observability stack: what's running, how to use it, and how to
 
 | Component | Role | Host |
 |---|---|---|
-| Prometheus | Metrics collection and alerting rules | Monitoring VM |
-| Grafana | Dashboards and visualization | Monitoring VM |
-| Alertmanager | Alert routing and silencing | Monitoring VM |
-| Loki | Log aggregation | Monitoring VM |
-| Uptime Kuma | Endpoint availability monitoring and status page | Monitoring VM |
+| Prometheus | Metrics collection and alerting rules | `mon01` |
+| Grafana | Dashboards and visualization | `mon01` |
+| Alertmanager | Alert routing and silencing | `mon01` |
+| Loki | Log aggregation | `mon01` |
+| Uptime Kuma | Endpoint availability monitoring and status page | `mon01` |
 | Promtail | Log shipping agent | All local hosts |
 | node_exporter | Host metrics | All hosts (local + EC2) |
-| cAdvisor | Container metrics | Utility VM |
-| Pi-hole FTL exporter | DNS metrics | Utility VM |
+| cAdvisor | Container metrics | `util01`, `qdev01` |
+| Pi-hole FTL exporter | DNS metrics | `util01`, `qdev01` |
 | CloudWatch agent | EC2 logs | EC2 instance |
 
 ---
@@ -27,10 +27,10 @@ Reference for the observability stack: what's running, how to use it, and how to
 
 | Service | URL |
 |---|---|
-| Grafana | `http://monitoring-vm:3000` |
-| Prometheus | `http://monitoring-vm:9090` |
-| Alertmanager | `http://monitoring-vm:9093` |
-| Uptime Kuma | `http://monitoring-vm:3001` |
+| Grafana | `http://mon01:3000` |
+| Prometheus | `http://mon01:9090` |
+| Alertmanager | `http://mon01:9093` |
+| Uptime Kuma | `http://mon01:3001` |
 
 ---
 
@@ -42,10 +42,12 @@ Uptime Kuma provides endpoint availability monitoring and a status page. It is t
 
 | Monitor | Type | Endpoint |
 |---|---|---|
-| nginx target — homelab | HTTP | `http://utility-vm:80/healthz` |
+| nginx target — util01 | HTTP | `http://util01:80/healthz` |
+| nginx target — qdev01 | HTTP | `http://qdev01:80/healthz` |
 | nginx target — AWS EC2 | HTTP | `http://<ec2-ip>:80/healthz` |
-| Pi-hole DNS | DNS | UDP port 53 on utility-vm |
-| Grafana | HTTP | `http://monitoring-vm:3000` |
+| Pi-hole DNS — util01 | DNS | UDP port 53 on util01 |
+| Pi-hole DNS — qdev01 | DNS | UDP port 53 on qdev01 |
+| Grafana | HTTP | `http://mon01:3000` |
 | External DNS check | DNS | Upstream resolver — confirms Pi-hole is forwarding correctly |
 
 **Configuration backup:** Uptime Kuma config is exported as JSON and stored in the repository. Re-import after a restore.
@@ -95,10 +97,10 @@ Critical alerts fire immediately. Warnings group with a 5-minute wait.
 
 ```bash
 # 1. Check Uptime Kuma dashboard first — confirms which endpoint is down
-# http://monitoring-vm:3001
+# http://mon01:3001
 
 # 2. Check container status on the affected host
-ssh utility-vm
+ssh util01
 docker ps -a
 
 # 3. Check container logs
@@ -189,7 +191,7 @@ pihole_queries_blocked_today / pihole_queries_today * 100
 
 Use the Alertmanager UI to create a silence during planned maintenance:
 
-1. Navigate to `http://monitoring-vm:9093`
+1. Navigate to `http://mon01:9093`
 2. Click **New Silence**
 3. Add a matcher: `alertname=<AlertName>` (optionally scope to an instance)
 4. Set duration and add a comment (reason + your name)
@@ -213,7 +215,7 @@ If you are seeing a monitoring outage, work through these cases:
 Proxmox HA detects the failure and migrates `mon01` to `pve01`. Check HA status:
 
 - Datacenter → HA → Resources — `mon01` should show `started` on `pve01` within ~30 seconds
-- Grafana at `http://monitoring-vm:3000` should be accessible once migration completes
+- Grafana at `http://mon01:3000` should be accessible once migration completes
 
 If HA recovery stalls (status stuck at `recovery` for > 2 minutes):
 

@@ -25,7 +25,7 @@ For each exercise:
 
 **Setup:**
 ```bash
-ssh utility-vm
+ssh util01
 docker stop <nginx_container>
 ```
 
@@ -80,7 +80,7 @@ ansible-playbook -i inventories/aws playbooks/monitoring-target.yml
 
 **Setup:**
 ```bash
-ssh utility-vm
+ssh util01
 sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/' /etc/ssh/sshd_config
 sudo systemctl restart sshd
 ```
@@ -94,7 +94,7 @@ ansible-playbook -i inventories/homelab playbooks/baseline.yml --check --diff
 ansible-playbook -i inventories/homelab playbooks/baseline.yml
 
 # Verify
-ansible utility-vm -i inventories/homelab -m command \
+ansible util01 -i inventories/homelab -m command \
   -a "sshd -T | grep permitrootlogin"
 ```
 
@@ -102,31 +102,35 @@ ansible utility-vm -i inventories/homelab -m command \
 
 ---
 
-## Scenario 4 — Monitoring VM Migration
+## Scenario 4 — HA Failover: mon01 Auto-Migration
 
-**Story:** Maintenance required on the primary Proxmox host. Migrate the Monitoring VM live.
+**Story:** `pve02` fails unexpectedly. Proxmox HA automatically migrates `mon01` to `pve01` — no operator action required. Verify the automatic recovery and confirm there is no monitoring gap.
 
-**Setup:** No failure to introduce — this is a planned operation.
+**Setup:**
+```bash
+# Simulate node failure: shut down pve02 hard (power button or Proxmox UI → Stop)
+# This is a real disruption — confirm no critical work is running on pve02 first
+```
 
 **What to practice:**
-- In Proxmox UI: select Monitoring VM → Migrate → choose target host
-- While migration runs, watch Grafana — verify no data gap
+- Watch Datacenter → HA → Resources — `mon01` should show `started` on `pve01` within ~30 seconds
+- Watch Grafana — verify no data gap during migration
 - Confirm Prometheus continues scraping all targets post-migration
-- Confirm Grafana dashboards still load
+- Confirm `mon01` returns to `pve02` when `pve02` recovers
 
 **Verify:**
 ```bash
-# Check Prometheus continuity
-# Query: up{job="node_exporter"} — should stay 1 throughout
+ssh pve01
+pvesh get /cluster/ha/status/current   # mon01 should show: status=started, node=pve01
 ```
 
-**Interview angle:** *"How do you design for availability? What was separate and why?"*
+**Interview angle:** *"How do you design for availability? What happens when a host fails?"*
 
 ---
 
 ## Scenario 5 — Backup Restore Drill
 
-**Story:** Utility VM is lost. Restore it.
+**Story:** `util01` is lost. Restore it.
 
 **Setup:** Note the current VMID. The "failure" is simulated by restoring to a new VMID.
 
@@ -151,11 +155,11 @@ qm start <new_vmid>
 
 ## Scenario 6 — Disk Space Alert
 
-**Story:** A disk space warning fires on the Utility VM.
+**Story:** A disk space warning fires on `util01`.
 
 **Setup:**
 ```bash
-ssh utility-vm
+ssh util01
 # Create a large file to trigger the threshold
 dd if=/dev/zero of=/tmp/bigfile bs=1M count=5000
 ```
