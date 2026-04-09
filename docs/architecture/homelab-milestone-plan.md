@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-06
-> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · non-platform VMs restored to pve01
+> **Last updated:** 2026-04-08
+> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 started — pbs01 provisioned
 
 ---
 
@@ -168,7 +168,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Both Proxmox hosts patched and rebooted | 🔲 | |
 | SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
 | Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
-| Debian 12 VM template created | ✅ | pve01 — 2026-04-08 · pve02 pending |
+| Debian 13 VM template created | ✅ | pve01 — 2026-04-08 · pve02 pending |
 | Template successfully cloned to test VM | ✅ | Cloned to pbs01 (VM 103) — 2026-04-08 |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
 | `nfs-shared` Proxmox storage pool added on pve01 | ✅ | NFS mount of `tank/proxmox-shared` on nas01 — 2026-04-07 |
@@ -205,12 +205,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | Automation VM provisioned manually on pve02 | 🔲 | Bootstrap exception — Terraform cannot provision its own execution host |
-| Debian 12 installed and accessible via SSH | 🔲 | |
+| Debian 13 installed and accessible via SSH | 🔲 | |
 | Baseline host security configured on Automation VM | 🔲 | |
 | Ansible installed and functional on Automation VM | 🔲 | |
 | Automation VM added to Ansible homelab inventory | 🔲 | |
 | Ansible Vault file created and encrypted | 🔲 | |
-| Debian 12 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
+| Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
 | `docs/operations/auto01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
@@ -238,7 +238,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
 | `pbs01` imported into Terraform state | 🔲 | `terraform import proxmox_vm_qemu.pbs01 <vmid>` — brings the manually-provisioned PBS VM under Terraform management; verify with `terraform plan` (should show no changes) |
-| SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Three surfaces to update: (1) Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`); (2) Debian 12 VM template cloud-init key (`qm set 9000 --sshkeys ~/.ssh/auto01_ed25519.pub`); (3) all VMs provisioned before rotation — deploy new key via Ansible baseline and verify `fedora_ed25519` is removed from `authorized_keys` on each host |
+| SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Three surfaces to update: (1) Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`); (2) Debian 13 VM template cloud-init key (`qm set 9000 --sshkeys ~/.ssh/auto01_ed25519.pub`); (3) all VMs provisioned before rotation — deploy new key via Ansible baseline and verify `fedora_ed25519` is removed from `authorized_keys` on each host |
 
 ---
 
