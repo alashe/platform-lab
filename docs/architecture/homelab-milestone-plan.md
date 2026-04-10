@@ -170,7 +170,6 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
 | Debian 13 VM template created | ✅ | pve01 — 2026-04-08 · pve02 pending |
 | Template successfully cloned to test VM | ✅ | Cloned to pbs01 (VM 103) — 2026-04-08 |
-| Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified |
 | `nfs-shared` Proxmox storage pool added on pve01 | ✅ | NFS mount of `tank/proxmox-shared` on nas01 — 2026-04-07 |
 | `nfs-shared` Proxmox storage pool added on pve02 | 🔲 | Prerequisite for mon01 live migration (M7) |
 | `docs/operations/proxmox-setup.md` written | 🔄 | In progress — review and finalize at end of M1 |
@@ -186,9 +185,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | PBS VM provisioned on pve01 | ✅ | VM 103 · IP 192.168.0.63 · 2026-04-08 |
-| Scheduled VM backup jobs configured | 🔲 | |
+| PBS software installed | 🔲 | |
+| PBS datastore pointed at NAS NFS share | 🔲 | `tank/backups/pbs` — RAIDZ1 HDD pool (see ADR-016) |
+| NFS share accessible from PBS | 🔲 | Verify `showmount -e 192.168.0.81` from pbs01 |
+| Backup jobs configured for available VMs — win01, pbs01 | 🔲 | Only VMs that exist at M2 — remaining VMs added as built |
 | First backup completed and verified | 🔲 | |
-| PBS datastore pointed at NAS NFS share | 🔲 | `tank/pbs` — RAIDZ1 HDD pool (see ADR-016) |
 | Cold-tier copy process implemented | 🔲 | |
 | `scripts/restore-check.sh` written | 🔲 | |
 | `make restore-test` functional | 🔲 | |
@@ -213,6 +214,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
+| Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified — depends on Debian install above |
+| PBS backup job added for auto01 | 🔲 | |
 | `docs/operations/auto01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
 | `docs/operations/utility-node.md` scaffolded | 🔲 | Full content added after M4 when Utility VM exists |
 
@@ -237,6 +240,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `terraform fmt`, `validate`, `plan`, `apply`, `destroy` workflow documented | 🔲 | |
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
+| PBS backup job added for util01 | 🔲 | |
 | `pbs01` imported into Terraform state | 🔲 | `terraform import proxmox_vm_qemu.pbs01 <vmid>` — brings the manually-provisioned PBS VM under Terraform management; verify with `terraform plan` (should show no changes) |
 | SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Three surfaces to update: (1) Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`); (2) Debian 13 VM template cloud-init key (`qm set 9000 --sshkeys ~/.ssh/auto01_ed25519.pub`); (3) all VMs provisioned before rotation — deploy new key via Ansible baseline and verify `fedora_ed25519` is removed from `authorized_keys` on each host |
 
