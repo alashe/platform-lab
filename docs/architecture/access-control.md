@@ -57,6 +57,19 @@ Root is not used for routine operations. Its password is set at OS install and s
 
 ---
 
+### `pbs01` — Proxmox Backup Server
+
+PBS manages its own authentication realm (`@pbs`), separate from the Linux host accounts.
+
+| Account | Created by | Purpose |
+|---|---|---|
+| `root@pam` | PBS install | Web UI and appliance administration — break-glass only |
+| `pve@pbs` | Manual — `proxmox-backup-manager` (see `pbs01-setup.md` step 4) | Proxmox VE integration account — authenticates with password, not token |
+
+`pve@pbs` has `DatastoreBackup` role on `/datastore/tank-pbs`. PBS storage is defined at Datacenter level in Proxmox and shared across all nodes. Store the password in the password manager.
+
+---
+
 ### `nas01` — TrueNAS Scale
 
 TrueNAS Scale manages users through its own system, not Linux PAM. Ansible manages the `ops` account on `nas01` via the `arensb.truenas` collection.
@@ -79,7 +92,7 @@ Use a strong, unique password for `truenas_admin`. Store in a password manager, 
 | `qdev01` | Yes | — | — | Ansible-managed bare metal |
 | `util01` | Yes | — | — | Ansible-managed VM |
 | `mon01` | Yes | — | — | Ansible-managed VM |
-| `pbs01` | Yes | — | — | Ansible-managed VM; PBS web UI has its own auth |
+| `pbs01` | Yes | — | `root@pam` | Ansible-managed VM; PBS web UI auth separate — see PBS accounts below |
 | `auto01` | Yes | — | — | Ansible-managed VM; all Ansible plays run as `ops` |
 | `nas01` | Yes (TrueNAS) | — | `truenas_admin` | `ops` managed via `arensb.truenas`; bootstrap: manual creation in TrueNAS UI |
 | `aws-web01` | Yes | — | — | Ansible-managed EC2; default cloud user superseded by `ops` |
@@ -112,6 +125,7 @@ All SSH authentication uses key pairs. Password authentication is disabled on al
 | Proxmox `pveadmin` password | Password manager |
 | NAS admin passwords | Password manager |
 | AWS credentials | Environment variables or `~/.aws/credentials` — never in repo |
+| PBS `pve@pbs` password | Password manager |
 
 ---
 
