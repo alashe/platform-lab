@@ -173,9 +173,9 @@ The CI/CD pipeline introduced at Milestone 5 includes a `terraform apply` stage 
 **Decision:** PBS writes its datastore to an NFS share hosted on the NAS rather than to local Proxmox storage.
 
 **Reasoning:**
-Storing the PBS datastore on the NAS means VM backups receive ZFS checksumming and snapshot protection automatically. It also makes the NAS the single aggregation point for the 3-2-1 backup chain — both personal data and VM backups flow through one device to offsite cold storage. This approach is host-independent: the PBS VM on pve01 can be migrated or restored without losing access to its datastore.
+Storing the PBS datastore on the NAS means VM backups receive ZFS checksumming and NAS-backed storage durability without tying the datastore to a Proxmox node's local disks. It also makes the NAS the single aggregation point for the 3-2-1 backup chain — both personal data and VM backups flow through one device to offsite cold storage. This approach is host-independent: the PBS VM on pve01 can be migrated or restored without losing access to its datastore.
 
-**Pool:** The NFS share is hosted on the 3x 8TB RAIDZ1 pool — see ADR-016. ZFS checksumming and snapshot protection apply to all PBS datastore writes.
+**Pool:** The NFS share is hosted on the 3x 8TB RAIDZ1 pool — see ADR-016. ZFS checksumming and RAIDZ-backed storage protection apply to all PBS datastore writes. Periodic ZFS snapshot tasks are not repo-managed for the PBS datastore dataset; PBS retention remains the backup control plane.
 
 **Rejected:** Dedicated disk on a Proxmox node (no ZFS protection, outside the 3-2-1 chain, host-dependent).
 
@@ -242,7 +242,7 @@ Rolling windows are also the approach used by Google SRE and Prometheus-native S
 
 ## ADR-017 — TrueNAS configuration managed by Terraform and Ansible
 
-**Decision:** After initial pool creation (manual), TrueNAS configuration above the pool layer is managed as code where provider support exists. Terraform owns dataset and snapshot definitions; Ansible handles NFS share configuration and day-2 tasks.
+**Decision:** After initial pool creation (manual), TrueNAS configuration above the pool layer is managed as code where provider support exists. Terraform owns dataset definitions; Ansible handles NFS share configuration and day-2 tasks.
 
 **Provider:** `deevus/truenas` (Terraform Registry: `registry.terraform.io/providers/deevus/truenas`). Uses SSH + `midclt` rather than the REST API. The previously cited `dariusbakunas/truenas` provider was archived October 2025 — TrueNAS deprecated the REST APIs it relied on.
 
@@ -251,7 +251,7 @@ Rolling windows are also the approach used by Google SRE and Prometheus-native S
 | Layer | Tool | Covers |
 |---|---|---|
 | OS install, network config, pool creation | Manual | One-time; not reproducible via IaC — documented in install pre-req |
-| Datasets, snapshot schedules | Terraform | `deevus/truenas` provider |
+| Datasets | Terraform | `deevus/truenas` provider |
 | NFS/SMB shares, user accounts | Ansible | TrueNAS REST API or `midclt` — `deevus/truenas` does not manage shares |
 | Ongoing config drift, state verification, day-2 tasks | Ansible | Same |
 
@@ -326,24 +326,24 @@ tank/
 
 **ZFS properties by branch:**
 
-| Dataset | recordsize | compression | snapshots |
+| Dataset | recordsize | compression | note |
 |---|---|---|---|
-| `tank/backups/pbs` | 16K | lz4 | No — PBS manages its own retention |
-| `tank/proxmox-shared` | 128K | lz4 | No — VM disk managed by Proxmox; PBS handles backup |
-| `tank/apps/<name>` | 128K (default) | lz4 | Yes — daily, keep 14 |
-| `tank/personal/*` | 1M | lz4 | Yes — daily, keep 30 |
+| `tank/backups/pbs` | 16K | lz4 | No repo-managed ZFS snapshots — PBS retention is the backup control plane; see ADR-012 and TrueNAS operational notes |
+| `tank/proxmox-shared` | 128K | lz4 | No repo-managed snapshot policy defined |
+| `tank/apps/<name>` | 128K (default) | lz4 | No repo-managed snapshot policy defined |
+| `tank/personal/*` | 1M | lz4 | No repo-managed snapshot policy defined |
 
 **Key decisions:**
 
-- **One dataset per app** — snapshot and quota granularity is per-app; no shared volume between containers
+- **One dataset per app** — per-app data boundaries preserve quota and protection flexibility without shared volumes between containers
 - **No pre-provisioning under `apps/`** — a dataset is created when the app is deployed, not before; Terraform adds a new dataset resource at deploy time
 - **No quotas at initial setup** — add quotas on specific apps (e.g. Nextcloud) once real usage data is available
 - **NFS shares follow dataset boundaries** — each `apps/<name>` dataset gets its own NFS share, mounted on `app01` as a bind mount source
 
 **Reasoning:**
-Per-dataset structure gives snapshot and quota granularity at the app level without locking in a fixed app list upfront. ZFS pool free space is shared dynamically — datasets grow as needed. Pre-creating empty datasets for apps that may never be deployed adds no value and creates cleanup overhead.
+Per-dataset structure preserves quota and protection flexibility at the app level without locking in a fixed app list upfront. ZFS pool free space is shared dynamically — datasets grow as needed. Pre-creating empty datasets for apps that may never be deployed adds no value and creates cleanup overhead.
 
-**Rejected:** Single `tank/apps` share with subdirectories per app — loses per-app snapshot and quota capability; pre-creating all app datasets regardless of deployment status — unnecessary, harder to keep clean.
+**Rejected:** Single `tank/apps` share with subdirectories per app — loses per-app protection and quota flexibility; pre-creating all app datasets regardless of deployment status — unnecessary, harder to keep clean.
 
 ---
 

@@ -29,7 +29,7 @@ flowchart TD
 
   subgraph Storage["Backup Tiers"]
     NAS["NAS\nwarm storage"]
-    COLD["Cold Tier\noffsite / S3 Glacier"]
+    COLD["Cold Tier\noffsite / Backblaze B2"]
   end
 
   subgraph AWS["AWS — Terraform-managed"]
@@ -156,10 +156,10 @@ flowchart TD
   VMs["VMs: Utility · Monitoring · Automation"]
   PBS["Proxmox Backup Server\npve01"]
   NAS["NAS\nwarm storage"]
-  COLD["Cold Tier\noffsite / S3 Glacier"]
+  COLD["Cold Tier\noffsite / Backblaze B2"]
 
-  VMs -->|"scheduled snapshot"| PBS
-  PBS -->|"datastore sync"| NAS
+  VMs -->|"scheduled backup"| PBS
+  PBS -->|"datastore writes"| NAS
   NAS -->|"periodic copy"| COLD
 
   PBS -->|"restore"| VMs

@@ -63,7 +63,7 @@ Uptime Kuma provides endpoint availability monitoring and a status page. It is t
 | Pi-hole DNS Analytics | Query volume · block rate · top domains |
 | Cross-Environment Status | Side-by-side homelab vs EC2 service health |
 
-Dashboards are provisioned from JSON in `ansible/roles/monitoring/files/dashboards/`.  
+Dashboards are provisioned from JSON in `ansible/roles/monitoring/files/dashboards/`. This lands with the monitoring automation at Milestone 7.  
 Changes to dashboards should be exported and committed back to the repo.
 
 ---
@@ -272,7 +272,7 @@ qm start <vmid>
 
 ## Adding a New Scrape Target
 
-1. Add the host to Prometheus scrape config in the `monitoring` role (`roles/monitoring/templates/prometheus.yml.j2`)
+1. Add the host to Prometheus scrape config in the `monitoring` role (`roles/monitoring/templates/prometheus.yml.j2`) at Milestone 7
 2. Re-run the monitoring playbook: `ansible-playbook -i inventories/homelab playbooks/monitoring.yml`
 3. Verify the target appears in Prometheus UI → Status → Targets (state: UP)
 4. Add corresponding HTTP monitor in Uptime Kuma for the service endpoint

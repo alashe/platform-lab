@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-08
-> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 started — pbs01 provisioned
+> **Last updated:** 2026-04-11
+> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 live build underway — pbs01 provisioned; backup jobs and validation remain
 
 ---
 
@@ -56,7 +56,7 @@ make validate
 | 0 | Lab Blueprint and Standards | — |
 | 1 | Proxmox Baseline | 0 |
 | 2 | Backup Architecture | 1 |
-| 3 | Utility Node Foundation | 1 |
+| 3 | Bootstrap: Automation VM + EliteDesk | 1 |
 | 4 | Terraform Foundations (Homelab) | 3 |
 | **5** | **CI/CD Infrastructure Delivery Pipeline** | **4** |
 | 6 | Network Service: Pi-hole Limited Rollout | 3 |
@@ -142,12 +142,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | RAIDZ1 pool created with 3x 8TB HDDs | ✅ | ~14.55 TiB usable; see ADR-016 |
 | Datasets created per hierarchy design | ✅ | `apps`, `backups`, `backups/pbs`, `personal` — managed via Terraform |
 | NFS share for PBS datastore configured | ✅ | `tank/backups/pbs` — restricted to pbs01 (192.168.0.63) via Ansible |
-| NFS share accessible from Proxmox network | 🔲 | Verify when PBS is configured in M2 |
+| NFS share accessible from Proxmox network | ✅ | Verified from `pbs01` during M2 datastore setup and from `pve01` for `nfs-shared`; `pve02` storage add remains tracked in M1 |
 | `tank/proxmox-shared` dataset created | ✅ | Shared NFS pool for Proxmox live migration — see ADR-023; managed via Terraform — 2026-04-07 |
 | NFS share for `tank/proxmox-shared` configured | ✅ | Restricted to pve01 (192.168.0.51) and pve02 (192.168.0.52) via Ansible — 2026-04-07 |
-| Snapshot schedule configured | ✅ | Daily snapshots: `tank/backups/pbs` (7-day retention), `tank/personal` (4-week retention) — via Ansible |
+| Snapshot policy reviewed and documented | ✅ | Periodic snapshot automation was removed from repo-managed TrueNAS config after clarifying that `tank/backups/pbs` should not rely on a separate ZFS snapshot policy on top of PBS retention; see TrueNAS operational notes |
 | Scrub schedule configured | ✅ | Monthly scrub of `tank` pool (weekly check, 30-day threshold) — via Ansible |
-| Terraform `deevus/truenas` provider configured | ✅ | Manages datasets and snapshot schedules — see ADR-017 |
+| Terraform `deevus/truenas` provider configured | ✅ | Manages dataset hierarchy — see ADR-017 |
 | All post-pool dataset config committed to Terraform | ✅ | Dataset hierarchy managed via `terraform/modules/truenas` |
 | NFS shares and user accounts managed via Ansible | ✅ | `arensb.truenas` collection; `ansible/roles/truenas` |
 | Ansible documented for day-2 config tasks | ✅ | `docs/operations/truenas-day2.md` |
@@ -168,7 +168,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Both Proxmox hosts patched and rebooted | 🔲 | |
 | SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
 | Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
-| Debian 13 VM template created | ✅ | pve01 — 2026-04-08 · pve02 pending |
+| Debian 13 VM template created | 🔄 | pve01 — 2026-04-08 · pve02 pending |
 | Template successfully cloned to test VM | ✅ | Cloned to pbs01 (VM 103) — 2026-04-08 |
 | `nfs-shared` Proxmox storage pool added on pve01 | ✅ | NFS mount of `tank/proxmox-shared` on nas01 — 2026-04-07 |
 | `nfs-shared` Proxmox storage pool added on pve02 | 🔲 | Prerequisite for mon01 live migration (M7) |
@@ -185,17 +185,17 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | PBS VM provisioned on pve01 | ✅ | VM 103 · IP 192.168.0.63 · 2026-04-08 |
-| PBS software installed | 🔲 | |
-| PBS datastore pointed at NAS NFS share | 🔲 | `tank/backups/pbs` — RAIDZ1 HDD pool (see ADR-016) |
-| NFS share accessible from PBS | 🔲 | Verify `showmount -e 192.168.0.81` from pbs01 |
+| PBS software installed | ✅ | Installed and reachable via PBS UI — 2026-04-08 |
+| PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `tank-pbs` |
+| NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
 | Backup jobs configured for available VMs — win01, pbs01 | 🔲 | Only VMs that exist at M2 — remaining VMs added as built |
 | First backup completed and verified | 🔲 | |
 | Cold-tier copy process implemented | 🔲 | |
-| `scripts/restore-check.sh` written | 🔲 | |
-| `make restore-test` functional | 🔲 | |
+| `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
+| `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
 | Restore test verified — RTO measured | 🔲 | |
-| `docs/operations/pbs01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
-| `docs/operations/backup-restore.md` reflects actual state | 🔄 | Doc written; lab not yet built |
+| `docs/operations/pbs01-setup.md` reflects actual build | 🔄 | Core build steps now match reality; remove status notice when backup jobs and validation are complete |
+| `docs/operations/backup-restore.md` reflects actual state | 🔄 | Core architecture documented; finalize schedules, restore validation, and measured RTO/RPO at end of M2 |
 
 ---
 

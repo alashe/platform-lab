@@ -1,5 +1,7 @@
 # Platform Architecture
 
+> **Status:** Architecture reference for the intended platform design. Current build progress is tracked in `homelab-milestone-plan.md`; use that document as the source of truth for what is live today.
+
 ## Overview
 
 This platform runs a small service workload across two environments — a local Proxmox cluster and AWS — with unified configuration management, observability, and a tiered backup strategy.
@@ -172,7 +174,8 @@ Ansible enforces baseline configuration across all managed hosts:
 | Firewall | ufw default deny · allow only required ports |
 | Users | `ops` user with sudo · authorized keys deployed |
 
-Managed hosts: `util01`, `mon01`, `pbs01`, `auto01`, `qdev01` (bare metal), AWS EC2.  
+Managed hosts for the Debian baseline: `util01`, `mon01`, `pbs01`, `auto01`, `qdev01` (bare metal), AWS EC2.  
+`nas01` is managed separately for TrueNAS day-2 tasks via the dedicated `truenas.yml` playbook.  
 The Fedora workstation is not managed by Ansible.
 
 Compliance is validated by re-running playbooks in check mode to detect drift.
@@ -246,6 +249,8 @@ HTTP endpoints            → Uptime Kuma          → Status page · alerts
 
 ## Automation Flow
 
+Target-state automation flow after Milestone 5:
+
 ```
 1. Terraform         provision infrastructure via Automation VM or CI pipeline
         ↓
@@ -266,14 +271,14 @@ From `terraform apply` to a monitored, compliant host: under 15 minutes.
 ## Backup Architecture
 
 ```
-VM snapshots (Proxmox schedule)
+Scheduled VM backups
         ↓
 Proxmox Backup Server (`pbs01` · pve01)
         ↓
 NAS  (warm storage · local)
   RAIDZ1 HDD pool — 3x 8TB (~16TB usable)
         ↓
-Cold tier  (offsite / S3 Glacier)
+Cold tier  (offsite / Backblaze B2)
 ```
 
 **Operational requirement:** Backups are not considered complete until a restore drill is performed and documented.
@@ -283,7 +288,7 @@ Cold tier  (offsite / S3 Glacier)
 | Metric | Target |
 |---|---|
 | RTO | < 30 minutes (full VM restore from PBS) |
-| RPO | 24 hours (daily snapshots) |
+| RPO | 24 hours (daily backups) |
 
 **Configuration recovery:**
 

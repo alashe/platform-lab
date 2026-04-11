@@ -49,11 +49,17 @@ Applied to: `pve01`, `pve02`.
 | Property | Value |
 |---|---|
 | Hosts | All Linux hosts |
-| SSH login | Disabled — `PermitRootLogin no` enforced by Ansible baseline |
-| Console | Physical console access only |
+| SSH login | Disabled on Ansible-managed hosts — `PermitRootLogin no` enforced by Ansible baseline |
+| Console | Physical console access only on managed hosts; Proxmox hypervisors retain pre-Ansible root access during bootstrap |
 | Stored | Strong, unique password in password manager — never in repo |
 
 Root is not used for routine operations. Its password is set at OS install and stored offline.
+
+For the Proxmox hypervisors specifically, the current operating model is:
+
+- use `root` during the bootstrap phase for initial SSH key placement and host setup
+- use `pveadmin` for routine Proxmox web UI and API administration
+- do not treat the hypervisors as part of the default Ansible-managed `ops` host set
 
 ---
 

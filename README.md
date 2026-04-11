@@ -3,6 +3,8 @@
 A career-grade homelab platform demonstrating CloudOps and platform engineering skills.  
 Runs real services, enforces configuration compliance, provisions cloud infrastructure, and implements observability — end to end.
 
+> **Status:** Private working repo. Current build state is Milestone 1 in progress with Milestone 2 underway — `pbs01` is provisioned, and backup-job validation is the main next step. Higher-level sections below describe the intended platform shape unless a milestone note says otherwise.
+
 ---
 
 ## What This Is
@@ -60,7 +62,7 @@ platform-lab/
 │   ├── architecture/   Design decisions and diagrams
 │   ├── operations/     Runbooks and incident scenarios
 │   └── setup/          Prerequisites for local and AWS environments
-└── .github/workflows/  CI — Terraform plan, Ansible syntax check
+└── .github/workflows/  CI — Terraform plan, Ansible syntax check (Planned)
 ```
 
 ---
@@ -99,6 +101,8 @@ make validate
 ---
 
 ## Automation
+
+Planned delivery point: Milestone 5.
 
 | Trigger | Action |
 |---|---|

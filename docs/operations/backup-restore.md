@@ -1,6 +1,6 @@
 # Backup & Restore
 
-> **Status: Written ahead of build (Milestone 2).** The PBS VM has not yet been provisioned. Procedures described here assume a fully operational backup chain. Verify schedules, restore paths, and RTO/RPO targets against live infrastructure when Milestone 2 is complete and remove this notice.
+> **Status: Written ahead of build (Milestone 2).** `pbs01` has been provisioned and the PBS datastore path is in place. The remaining live-build work is backup-job configuration plus end-to-end validation. Verify schedules, restore paths, and RTO/RPO targets against live infrastructure when Milestone 2 is complete and remove this notice.
 >
 > **Review note:** Re-review this document after Milestone 2 completion. Planned commands or playbooks should either exist in-repo by then or be replaced with the implemented procedure.
 
@@ -11,7 +11,7 @@ Backup architecture, schedules, verification, and restore procedures.
 ## Backup Chain
 
 ```
-Proxmox VMs (scheduled snapshots)
+Proxmox VMs (scheduled backups)
         ↓
 Proxmox Backup Server  (PBS VM)
         ↓
@@ -29,7 +29,7 @@ Backblaze B2  (offsite cold)
 | Metric | Target | Last Verified |
 |---|---|---|
 | RTO — full VM restore from PBS | < 30 minutes | Populate after first successful restore drill (Milestone 2) |
-| RPO — maximum data loss | 24 hours | Populate after backup schedule confirmed running (Milestone 2) |
+| RPO — maximum data loss | 24 hours | Populate after daily backup schedule is confirmed running (Milestone 2) |
 
 ---
 
@@ -37,10 +37,10 @@ Backblaze B2  (offsite cold)
 
 | Job | Source | Destination | Schedule | Retention |
 |---|---|---|---|---|
-| VM snapshot — util01 | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
-| VM snapshot — mon01 | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
+| VM backup — util01 | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
+| VM backup — mon01 | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
 | VM backup — pbs01 | Proxmox | Separate non-PBS storage | Weekly Sun 03:00 | 4 weekly |
-| VM snapshot — auto01 | Proxmox | PBS | Weekly Sun 03:15 | 4 weekly |
+| VM backup — auto01 | Proxmox | PBS | Weekly Sun 03:15 | 4 weekly |
 | NAS → Backblaze B2 (cold) | NAS | Backblaze B2 | Weekly | 90 days |
 | Terraform state | S3 backend | Versioned automatically | On every apply | S3 versioning |
 | Ansible / Terraform code | Git | Remote repository | On every push | Full history |
@@ -51,10 +51,10 @@ Backblaze B2  (offsite cold)
 
 | Asset | Method | Location |
 |---|---|---|
-| `util01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
-| `mon01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold); disk lives on `nfs-shared` — restore target must be `nfs-shared` or `local-lvm` |
+| `util01` | PBS backup | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
+| `mon01` | PBS backup | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold); disk lives on `nfs-shared` — restore target must be `nfs-shared` or `local-lvm` |
 | `pbs01` | Proxmox backup to separate storage | Separate non-PBS Proxmox backup target; do not rely on the same PBS instance as the only recovery path for `pbs01` |
-| `auto01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) |
+| `auto01` | PBS backup | PBS datastore → NAS (NFS, always-on) |
 | Grafana dashboards | JSON in Git | Repository |
 | Prometheus rules | Config in Git | Repository |
 | Ansible playbooks / roles | Git | Repository |
@@ -93,7 +93,7 @@ dig @<utility-vm-ip> google.com
 
 ### Restore mon01
 
-After restoring from PBS snapshot, dashboards and config should be intact.  
+After restoring from PBS backup, dashboards and config should be intact.  
 If restoring from scratch (e.g., new VM), re-provision with Ansible:
 
 ```bash
@@ -184,6 +184,6 @@ The PBS datastore lives on a NAS NFS share — no sync job to check. Verify the 
 
 ## Notes
 
-- PBS deduplication means incremental snapshots are storage-efficient — don't skip daily backups to save space
+- PBS deduplication means incremental backups are storage-efficient — don't skip daily backups to save space
 - Pi-hole blocklists are pulled fresh on container start; no backup needed for list data
 - `ansible-vault` encrypted secrets are committed to Git — vault password must be stored securely and separately from the repo
