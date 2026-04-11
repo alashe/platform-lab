@@ -1,6 +1,8 @@
 # Backup & Restore
 
 > **Status: Written ahead of build (Milestone 2).** The PBS VM has not yet been provisioned. Procedures described here assume a fully operational backup chain. Verify schedules, restore paths, and RTO/RPO targets against live infrastructure when Milestone 2 is complete and remove this notice.
+>
+> **Review note:** Re-review this document after Milestone 2 completion. Planned commands or playbooks should either exist in-repo by then or be replaced with the implemented procedure.
 
 Backup architecture, schedules, verification, and restore procedures.
 
@@ -37,7 +39,7 @@ Backblaze B2  (offsite cold)
 |---|---|---|---|---|
 | VM snapshot — util01 | Proxmox | PBS | Daily 02:00 | 7 daily / 4 weekly |
 | VM snapshot — mon01 | Proxmox | PBS | Daily 02:15 | 7 daily / 4 weekly |
-| VM snapshot — pbs01 | Proxmox | PBS | Weekly Sun 03:00 | 4 weekly |
+| VM backup — pbs01 | Proxmox | Separate non-PBS storage | Weekly Sun 03:00 | 4 weekly |
 | VM snapshot — auto01 | Proxmox | PBS | Weekly Sun 03:15 | 4 weekly |
 | NAS → Backblaze B2 (cold) | NAS | Backblaze B2 | Weekly | 90 days |
 | Terraform state | S3 backend | Versioned automatically | On every apply | S3 versioning |
@@ -51,7 +53,7 @@ Backblaze B2  (offsite cold)
 |---|---|---|
 | `util01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold) |
 | `mon01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) + Backblaze B2 (offsite cold); disk lives on `nfs-shared` — restore target must be `nfs-shared` or `local-lvm` |
-| `pbs01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) |
+| `pbs01` | Proxmox backup to separate storage | Separate non-PBS Proxmox backup target; do not rely on the same PBS instance as the only recovery path for `pbs01` |
 | `auto01` | PBS snapshot | PBS datastore → NAS (NFS, always-on) |
 | Grafana dashboards | JSON in Git | Repository |
 | Prometheus rules | Config in Git | Repository |
@@ -99,7 +101,20 @@ If restoring from scratch (e.g., new VM), re-provision with Ansible:
 ansible-playbook -i inventories/homelab playbooks/monitoring.yml
 ```
 
+`playbooks/monitoring.yml` is planned, not currently present in-repo. Re-validate this command after the monitoring automation lands.
+
 Grafana dashboards are provisioned automatically from JSON files in the role.
+
+### Restore pbs01
+
+Restore `pbs01` from its separate non-PBS Proxmox backup target, not from `pbs-tank`.
+
+If the backup target is a standard Proxmox VM backup archive, restore it with the normal VM restore flow for that storage backend. After restore:
+
+1. Confirm the PBS VM boots cleanly
+2. Confirm the NAS-mounted datastore path is reachable
+3. Confirm the PBS UI loads
+4. Confirm the `tank-pbs` datastore content is visible
 
 ---
 
@@ -114,7 +129,7 @@ terraform apply
 
 # 2. Update inventory with new public IP
 terraform output public_ip
-# Edit ansible/inventories/aws/hosts
+# Edit ansible/inventories/aws/hosts.ini
 
 # 3. Rerun configuration
 cd ansible
@@ -148,11 +163,13 @@ This is a rare scenario. Document steps if it ever occurs.
 Pick one VM. Restore it to a test VMID on the same Proxmox host.  
 Start it, verify services, log the actual RTO. Delete the test VM.
 
-```bash
-# From Proxmox CLI
-qmrestore /path/to/backup.vma <new-vmid> --storage local-lvm
-qm start <new-vmid>
-```
+For PBS-backed VMs, use the Proxmox web UI restore flow:
+
+1. Proxmox UI → PBS storage → Backups
+2. Select the backup
+3. Click **Restore**
+4. Choose the test VMID, target node, and target storage
+5. Start the restored VM and validate services
 
 ### Backup job health
 

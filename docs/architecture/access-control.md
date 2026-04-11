@@ -66,7 +66,7 @@ PBS manages its own authentication realm (`@pbs`), separate from the Linux host 
 | `root@pam` | PBS install | Web UI and appliance administration — break-glass only |
 | `pve@pbs` | Manual — `proxmox-backup-manager` (see `pbs01-setup.md` step 4) | Proxmox VE integration account — authenticates with password, not token |
 
-`pve@pbs` has `DatastoreBackup` role on `/datastore/tank-pbs`. PBS storage is defined at Datacenter level in Proxmox and shared across all nodes. Store the password in the password manager.
+`pve@pbs` should have `DatastoreAudit` and `DatastoreBackup` on `/datastore/tank-pbs`. `DatastoreAudit` lets Proxmox VE enumerate and inspect the datastore; `DatastoreBackup` allows backup writes. PBS storage is defined at Datacenter level in Proxmox and shared across all nodes. Store the password in the password manager.
 
 ---
 
