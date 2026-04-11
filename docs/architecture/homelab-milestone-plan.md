@@ -188,7 +188,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | PBS software installed | ✅ | Installed and reachable via PBS UI — 2026-04-08 |
 | PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `tank-pbs` |
 | NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
-| Backup jobs configured for available VMs — win01, pbs01 | 🔲 | Only VMs that exist at M2 — remaining VMs added as built |
+| Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
 | First backup completed and verified | 🔲 | |
 | Cold-tier copy process implemented | 🔲 | |
 | `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
@@ -347,6 +347,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `ansible/playbooks/docker.yml` written and tested | 🔲 | |
 | `ansible/playbooks/monitoring-target.yml` written and tested | 🔲 | |
 | `ansible/playbooks/utility-node.yml` written and tested | 🔲 | |
+| `ansible/playbooks/proxmox-host.yml` written and tested | 🔲 | OS-level hygiene for pve01/pve02 — no `ops` user, no ufw, no unattended-upgrades |
 | All playbooks idempotent (second run = no changes) | 🔲 | |
 | Playbooks run correctly on Utility VM, EliteDesk, and Automation VM | 🔲 | |
 | Secrets encrypted with Ansible Vault | 🔲 | |
@@ -398,7 +399,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Scenario 4 — Monitoring VM migration completed | 🔲 | No data gap verified |
 | Scenario 5 — VM restore drill completed | 🔲 | Actual RTO recorded |
 | Scenario 6 — disk space alert drill completed | 🔲 | |
-| Scenario 7 — Ansible compliance audit completed | 🔲 | |
+| Scenario 7 — stress test observability drill completed | 🔲 | Run `stress-test.yml` (cpu/memory/io/all) while watching dashboards; verify metrics reflect load and alerts fire at defined thresholds |
+| Scenario 8 — Ansible compliance audit completed | 🔲 | |
 | Pi-hole failover tested — Utility VM down, EliteDesk serves DNS | 🔲 | |
 | RTO measured and recorded in `backup-restore.md` | 🔲 | |
 | All docs updated to reflect what's actually built | 🔲 | |
