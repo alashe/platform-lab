@@ -273,7 +273,7 @@ qm start <vmid>
 ## Adding a New Scrape Target
 
 1. Add the host to Prometheus scrape config in the `monitoring` role (`roles/monitoring/templates/prometheus.yml.j2`) at Milestone 7
-2. Re-run the monitoring playbook: `ansible-playbook -i inventories/homelab playbooks/monitoring.yml`
+2. Re-run the monitoring playbook once it is implemented at Milestone 7. Planned path: `playbooks/monitoring.yml`
 3. Verify the target appears in Prometheus UI → Status → Targets (state: UP)
 4. Add corresponding HTTP monitor in Uptime Kuma for the service endpoint
 5. Check it appears in the Node Health dashboard within one scrape interval (default: 15s)

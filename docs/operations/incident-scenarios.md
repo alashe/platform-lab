@@ -136,10 +136,12 @@ pvesh get /cluster/ha/status/current   # mon01 should show: status=started, node
 
 **What to practice:**
 ```bash
-# In PBS UI or Proxmox CLI:
-# Restore backup to new VMID on same (or different) host
-qmrestore <backup_path> <new_vmid> --storage local-lvm
-qm start <new_vmid>
+# In the Proxmox UI:
+# 1. Open PBS storage -> Backups
+# 2. Select the util01 backup
+# 3. Click Restore
+# 4. Choose a new VMID, target node, and target storage
+# 5. Start the restored VM
 ```
 
 **Verify:**
