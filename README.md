@@ -3,7 +3,7 @@
 A career-grade homelab platform demonstrating CloudOps and platform engineering skills.  
 Runs real services, enforces configuration compliance, provisions cloud infrastructure, and implements observability — end to end.
 
-> **Status:** Private working repo. Current build state is Milestone 1 in progress with Milestone 2 underway — `pbs01` is provisioned, and backup-job validation is the main next step. Higher-level sections below describe the intended platform shape unless a milestone note says otherwise.
+> **Status:** Private working repo. Milestone 1 (Proxmox Baseline) complete. Milestone 2 (Backup Architecture) in progress — `pbs01` is provisioned and backing up; restore validation is the main next step. Higher-level sections below describe the intended platform shape unless a milestone note says otherwise.
 
 ---
 

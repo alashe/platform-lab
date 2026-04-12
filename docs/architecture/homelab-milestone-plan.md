@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-11
-> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 live build underway
+> **Last updated:** 2026-04-12
+> **Current phase:** Milestone 2 — Backup Architecture (in progress) · M1 complete · pbs01 built and backing up · restore validation remaining
 ---
 
 ## Status Key
@@ -166,14 +166,17 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | ubuntu-server VM — back up before reinstall | ✅ | Backed up to `nas01-backups` NFS share via Proxmox backup — 2026-04-05 · VM deleted 2026-04-07, backup removed from NAS |
 | `ala-pve01` renamed to `pve01` in Proxmox | ✅ | Fresh install with correct hostname — 2026-04-05 |
 | `pve01` static IP set to `192.168.0.51` | ✅ | 2026-04-05 |
-| Both Proxmox hosts patched and rebooted | 🔲 | |
-| SSH key access configured on both hosts | 🔄 | pve01 complete 2026-04-06 · pve02 pending this weekend |
+| Community post-install script run on both hosts | ✅ | Repos, nag removal, update, HA services — pve01 + pve02 2026-04-12 |
+| NIC offloading fix applied on both hosts | ✅ | Intel e1000e — pve01 + pve02 2026-04-12 |
+| CPU microcode updated on both hosts | ✅ | Intel microcode — pve01 + pve02 2026-04-12 |
+| SSH key access configured on both hosts | ✅ | pve01 2026-04-06 · pve02 2026-04-12 |
 | Firewall posture defined | ✅ | LAN-trust — Proxmox built-in firewall disabled; documented in hardening-baseline.md |
-| Debian 13 VM template created | 🔄 | pve01 — 2026-04-08 · pve02 pending |
+| Proxmox cluster created (`pvecm`) | ✅ | `lab-cluster` — pve01 created, pve02 joined 2026-04-12; quorum requires both nodes until QDevice at M3 |
+| Debian 13 VM template created | ✅ | pve01 — 2026-04-08 (ID 9000) · pve02 — 2026-04-12 (ID 9001) |
 | Template successfully cloned to test VM | ✅ | Cloned to pbs01 (VM 103) — 2026-04-08 |
 | `nfs-shared` Proxmox storage pool added on pve01 | ✅ | NFS mount of `tank/proxmox-shared` on nas01 — 2026-04-07 |
-| `nfs-shared` Proxmox storage pool added on pve02 | 🔲 | Prerequisite for mon01 live migration (M7) |
-| `docs/operations/proxmox-setup.md` written | 🔄 | In progress — review and finalize at end of M1 |
+| `nfs-shared` Proxmox storage pool added on pve02 | ✅ | 2026-04-12 — cluster-wide after join |
+| `docs/operations/proxmox-setup.md` written | ✅ | Finalized 2026-04-12 — template/VM sections split to `vm-templates.md` |
 
 ---
 
@@ -187,6 +190,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | PBS VM provisioned on pve01 | ✅ | VM 103 · IP 192.168.0.63 · 2026-04-08 |
 | PBS software installed | ✅ | Installed and reachable via PBS UI — 2026-04-08 |
+| PBS post-install script run | ✅ | Repos, nag removal, update via community script — 2026-04-12 |
 | PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `tank-pbs` |
 | NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
 | Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
