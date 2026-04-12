@@ -398,23 +398,23 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| Scenario 1 — service down drill completed | 🔲 | Time-to-alert recorded (Uptime Kuma + Alertmanager); error budget burn rate reviewed post-drill |
-| Scenario 2 — Terraform destroy + rebuild completed | 🔲 | Rebuild time recorded |
-| Scenario 3 — config drift detection completed | 🔲 | |
-| Scenario 4 — Monitoring VM migration completed | 🔲 | No data gap verified |
-| Scenario 5 — VM restore drill completed | 🔲 | Actual RTO recorded |
-| Scenario 6 — disk space alert drill completed | 🔲 | |
-| Scenario 7 — stress test observability drill completed | 🔲 | Run `stress-test.yml` (cpu/memory/io/all) while watching dashboards; verify metrics reflect load and alerts fire at defined thresholds |
-| Scenario 8 — Ansible compliance audit completed | 🔲 | |
-| Pi-hole failover tested — Utility VM down, EliteDesk serves DNS | 🔲 | |
-| RTO measured and recorded in `backup-restore.md` | 🔲 | |
-| All docs updated to reflect what's actually built | 🔲 | |
-| No aspirational claims in `README.md` | 🔲 | |
-| Sync manifest reviewed — all public-ready files included | 🔲 | Add any final code files; confirm exclusions are correct |
-| Public repo README polished for portfolio presentation | 🔲 | Standalone context for someone landing on the public repo |
-| Public repo walkable as a portfolio artifact | 🔲 | No broken links, no placeholder content, no internal references |
-| Repo walkable live in an interview | 🔲 | |
-| Jaeger trace captured from a reliability drill scenario | 🔲 | Optional — instrument one service (e.g. EC2 nginx target); capture a trace during a drill and export to repo as portfolio artifact |
+| Scenario 1 — service down drill | 🔲 | Time-to-alert recorded (Uptime Kuma + Alertmanager); error budget burn rate reviewed post-drill |
+| Scenario 2 — Terraform destroy + rebuild | 🔲 | Rebuild time recorded |
+| Scenario 3 — config drift detection | 🔲 | |
+| Scenario 4 — Monitoring VM migration | 🔲 | No data gap verified |
+| Scenario 5 — VM restore drill | 🔲 | Actual RTO recorded |
+| Scenario 6 — disk space alert drill | 🔲 | |
+| Scenario 7 — stress test observability drill | 🔲 | Run `stress-test.yml` (cpu/memory/io/all); verify metrics reflect load and alerts fire at thresholds |
+| Scenario 8 — Ansible compliance audit | 🔲 | |
+| Pi-hole failover tested | 🔲 | Utility VM down, EliteDesk serves DNS |
+| RTO measured and recorded | 🔲 | Update `backup-restore.md` |
+| All docs updated to reflect actual build | 🔲 | |
+| No aspirational claims in README | 🔲 | |
+| Sync manifest reviewed | 🔲 | Add final code files; confirm exclusions are correct |
+| Public repo README polished | 🔲 | Standalone context for portfolio presentation |
+| Public repo walkable as portfolio artifact | 🔲 | No broken links, no placeholder content, no internal references |
+| Repo walkable live in interview | 🔲 | |
+| Jaeger trace from reliability drill | 🔲 | Optional — instrument one service (e.g. EC2 nginx); export trace as portfolio artifact |
 
 ---
 
