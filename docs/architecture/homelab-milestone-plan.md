@@ -4,8 +4,7 @@ Authoritative milestone plan for the `platform-lab` project.
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
 > **Last updated:** 2026-04-11
-> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 live build underway — pbs01 provisioned; backup jobs and validation remain
-
+> **Current phase:** Milestone 1 — Proxmox Baseline (in progress) · Debian 13 template created on pve01 · M2 live build underway
 ---
 
 ## Status Key
@@ -85,6 +84,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Monitoring VM | pve02 | Observability — must be on separate node from Utility VM |
 | PBS VM | pve01 | Proxmox Backup Server |
 | Automation VM | pve02 | Ansible execution · Terraform workspace |
+| App VM | pve01 | Personal apps — Nextcloud · Paperless (persistent data on NAS) |
+| LLM VM | pve02 | Ollama inference service — M12 capstone (pve02 has RAM headroom) |
 
 **HP Elitedesk 800 mini (bare metal — not a Proxmox node):**
 

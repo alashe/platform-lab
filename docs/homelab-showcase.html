@@ -341,6 +341,12 @@
     background: rgba(77,166,255,0.07);
     border: 1px solid var(--blue2);
   }
+  .svc-card.in-progress { border-left: 2px solid var(--amber); }
+  .status-badge.in-progress {
+    color: var(--amber);
+    background: rgba(255,179,71,0.08);
+    border: 1px solid var(--amber2);
+  }
 
   /* ── Milestone tracker ── */
   .milestone-list {
@@ -530,8 +536,8 @@
         <span class="stat-label">Proxmox Nodes</span>
       </div>
       <div class="stat-item">
-        <span class="stat-val" style="color:var(--green)">5</span>
-        <span class="stat-label">Planned VMs</span>
+        <span class="stat-val" style="color:var(--green)">6</span>
+        <span class="stat-label">Platform VMs</span>
       </div>
       <div class="stat-item">
         <span class="stat-val" style="color:var(--blue)">~16 TB</span>
@@ -564,14 +570,14 @@
             <div class="hw-name">pve01 — Dell Precision 7550</div>
             <div class="hw-model">Primary compute · <LAB_IP></div>
             <div class="hw-detail">
-              <span>Hosts util01 · pbs01</span>
+              <span>Hosts util01 · pbs01 · app01 (planned)</span>
             </div>
           </div>
           <div class="hw-card" style="border-left:2px solid var(--green)">
             <div class="hw-name">pve02 — Dell Precision 7560</div>
             <div class="hw-model">Secondary compute · <LAB_IP></div>
             <div class="hw-detail">
-              <span>Hosts mon01 · auto01</span>
+              <span>Hosts mon01 · auto01 · llm01 (planned)</span>
             </div>
           </div>
           <div class="hw-card" style="border-left:2px solid var(--purple)">
@@ -633,15 +639,25 @@
     <div class="service-group">
       <div class="service-group-label">Infrastructure &amp; Operations</div>
       <div class="card-grid">
+        <div class="svc-card deployed">
+          <div class="svc-name">Proxmox VE Cluster</div>
+          <div class="svc-desc">2-node HA cluster with Corosync QDevice quorum. Live migration for zero-downtime node maintenance.</div>
+          <span class="status-badge deployed">Deployed · M1</span>
+        </div>
+        <div class="svc-card deployed">
+          <div class="svc-name">TrueNAS Scale</div>
+          <div class="svc-desc">ZFS storage platform. RAIDZ1 pool backing PBS datastore, shared VM storage, and app persistent volumes via NFS.</div>
+          <span class="status-badge deployed">Deployed</span>
+        </div>
         <div class="svc-card planned">
           <div class="svc-name">Pi-hole</div>
           <div class="svc-desc">Whole-home DNS filtering. Primary on util01, secondary on qdev01. Automatic failover via router DHCP.</div>
           <span class="status-badge planned">Planned · M6</span>
         </div>
-        <div class="svc-card planned">
+        <div class="svc-card in-progress">
           <div class="svc-name">Proxmox Backup Server</div>
           <div class="svc-desc">VM snapshot management. Datastore on nas01 via NFS. Cold tier to Backblaze B2.</div>
-          <span class="status-badge planned">Planned · M2</span>
+          <span class="status-badge in-progress">In Progress · M2</span>
         </div>
         <div class="svc-card planned">
           <div class="svc-name">Prometheus + Grafana</div>
@@ -662,6 +678,11 @@
           <div class="svc-name">Uptime Kuma</div>
           <div class="svc-desc">Endpoint availability monitoring. HTTP, DNS, and TCP probes. Public status page.</div>
           <span class="status-badge planned">Planned · M7</span>
+        </div>
+        <div class="svc-card planned">
+          <div class="svc-name">Ollama — LLM Inference</div>
+          <div class="svc-desc">Locally-hosted LLM on dedicated VM. Alert triage integration via Alertmanager webhook — synthesizes metrics, logs, and runbook context into first-response recommendations.</div>
+          <span class="status-badge planned">Planned · M12</span>
         </div>
       </div>
     </div>
@@ -684,10 +705,10 @@
         <div class="ms-name">Proxmox Baseline</div>
         <div class="ms-tag">In Progress</div>
       </div>
-      <div class="ms-row pending">
+      <div class="ms-row active">
         <div class="ms-num">M2</div>
         <div class="ms-name">Backup Architecture — PBS → NAS → Cold Tier</div>
-        <div class="ms-tag">Planned</div>
+        <div class="ms-tag">In Progress</div>
       </div>
       <div class="ms-row pending">
         <div class="ms-num">M3</div>
@@ -777,6 +798,7 @@
           <span class="stack-item">Alertmanager</span>
           <span class="stack-item">Loki + Promtail</span>
           <span class="stack-item">Uptime Kuma</span>
+          <span class="stack-item">SLO burn rate alerting</span>
           <span class="stack-item">node_exporter · cAdvisor</span>
           <span class="stack-item" style="color:var(--dim)">Jaeger (planned · M10+)</span>
         </div>
