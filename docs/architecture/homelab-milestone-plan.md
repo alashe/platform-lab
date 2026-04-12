@@ -189,7 +189,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `tank-pbs` |
 | NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
 | Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
-| First backup completed and verified | 🔲 | |
+| First backup completed and verified | ✅ | win01 (VM 111) backed up to tank-pbs and visible on NAS — 2026-04-11 |
 | Cold-tier copy process implemented | 🔲 | |
 | `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
 | `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
