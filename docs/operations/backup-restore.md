@@ -114,7 +114,7 @@ If the backup target is a standard Proxmox VM backup archive, restore it with th
 1. Confirm the PBS VM boots cleanly
 2. Confirm the NAS-mounted datastore path is reachable
 3. Confirm the PBS UI loads
-4. Confirm the `tank-pbs` datastore content is visible
+4. Confirm the `pbs-tank` datastore content is visible
 
 ---
 

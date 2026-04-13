@@ -191,11 +191,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | PBS VM provisioned on pve01 | ✅ | VM 103 · IP 192.168.0.63 · 2026-04-08 |
 | PBS software installed | ✅ | Installed and reachable via PBS UI — 2026-04-08 |
 | PBS post-install script run | ✅ | Repos, nag removal, update via community script — 2026-04-12 |
-| PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `tank-pbs` |
+| PBS datastore pointed at NAS NFS share | ✅ | `tank/backups/pbs` mounted at `/mnt/pbs` and added as datastore `pbs-tank` |
 | NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
 | Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
-| First backup completed and verified | ✅ | win01 (VM 111) backed up to tank-pbs and visible on NAS — 2026-04-11 |
-| Cold-tier copy process implemented | ✅ | Backblaze B2 bucket `platform-lab-pbs-cold` + PBS S3 datastore `offsite-pbs` + weekly pull sync from `tank-pbs` — verified 2026-04-12 |
+| First backup completed and verified | ✅ | win01 (VM 111) backed up to pbs-tank and visible on NAS — 2026-04-11 |
+| Cold-tier copy process implemented | ✅ | Backblaze B2 bucket `platform-lab-pbs-cold` + PBS S3 datastore `pbs-offsite` + weekly pull sync from `pbs-tank` — verified 2026-04-12 |
 | `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
 | `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
 | `docs/operations/pbs01-setup.md` reflects actual build | ✅ | Updated during live build — B2 cold tier, S3 endpoint quirks, sync job, disk resize all reflect reality — 2026-04-12 |
