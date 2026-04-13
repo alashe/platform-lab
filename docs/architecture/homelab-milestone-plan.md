@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-12
-> **Current phase:** Milestone 2 — Backup Architecture (in progress) · M1 complete · pbs01 built and backing up · restore validation remaining
+> **Last updated:** 2026-04-13
+> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (not started) · M2 complete · restore test deferred to M3 (first platform VM)
 ---
 
 ## Status Key
@@ -198,9 +198,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Cold-tier copy process implemented | ✅ | Backblaze B2 bucket `platform-lab-pbs-cold` + PBS S3 datastore `offsite-pbs` + weekly pull sync from `tank-pbs` — verified 2026-04-12 |
 | `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
 | `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
-| Restore test verified — RTO measured | 🔲 | |
 | `docs/operations/pbs01-setup.md` reflects actual build | ✅ | Updated during live build — B2 cold tier, S3 endpoint quirks, sync job, disk resize all reflect reality — 2026-04-12 |
-| `docs/operations/backup-restore.md` reflects actual state | 🔄 | Core architecture documented; finalize schedules, restore validation, and measured RTO/RPO at end of M2 |
 
 ---
 
@@ -221,6 +219,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified — depends on Debian install above |
 | PBS backup job added for auto01 | 🔲 | |
+| Restore test verified — RTO measured | 🔲 | Moved from M2 — auto01 is the first platform VM with a standard PBS backup job; use it to validate the restore chain and measure RTO |
+| `docs/operations/backup-restore.md` reflects actual state | 🔄 | Moved from M2 — finalize schedules, restore validation, and measured RTO/RPO after restore test above |
 | `docs/operations/auto01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
 | `docs/operations/utility-node.md` scaffolded | 🔲 | Full content added after M4 when Utility VM exists |
 
