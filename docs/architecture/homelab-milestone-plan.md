@@ -195,11 +195,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | NFS share accessible from PBS | ✅ | Verified during datastore configuration on `pbs01` |
 | Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
 | First backup completed and verified | ✅ | win01 (VM 111) backed up to tank-pbs and visible on NAS — 2026-04-11 |
-| Cold-tier copy process implemented | 🔲 | |
+| Cold-tier copy process implemented | ✅ | Backblaze B2 bucket `platform-lab-pbs-cold` + PBS S3 datastore `offsite-pbs` + weekly pull sync from `tank-pbs` — verified 2026-04-12 |
 | `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
 | `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
 | Restore test verified — RTO measured | 🔲 | |
-| `docs/operations/pbs01-setup.md` reflects actual build | 🔄 | Core build steps now match reality; remove status notice when backup jobs and validation are complete |
+| `docs/operations/pbs01-setup.md` reflects actual build | ✅ | Updated during live build — B2 cold tier, S3 endpoint quirks, sync job, disk resize all reflect reality — 2026-04-12 |
 | `docs/operations/backup-restore.md` reflects actual state | 🔄 | Core architecture documented; finalize schedules, restore validation, and measured RTO/RPO at end of M2 |
 
 ---
