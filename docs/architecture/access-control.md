@@ -18,9 +18,11 @@ The standard human-and-machine account on all Ansible-managed Linux hosts.
 | Shell | `/bin/bash` |
 | Sudo | `ALL=(ALL) NOPASSWD:ALL` |
 | Auth | SSH public key only — password login disabled |
-| Created by | Ansible `baseline` role |
+| Created by | Cloud-init for bootstrap exceptions (`pbs01`, `auto01`) · Ansible `baseline` role for steady-state management and all later hosts |
 
 This is the account Ansible connects as for all configuration management and the account used for day-to-day SSH operations. It is the only account with persistent passwordless sudo on managed hosts.
+
+For the two pre-Terraform bootstrap exceptions, `ops` exists on first boot because the Debian template sets `ciuser=ops` and injects the Fedora workstation public key via cloud-init. After that first boot, the Ansible `baseline` role becomes the source of truth for the account and its authorized keys.
 
 Applied to: `util01`, `mon01`, `pbs01`, `auto01`, `qdev01`, `aws-web01`.
 
