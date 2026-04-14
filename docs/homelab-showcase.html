@@ -274,6 +274,11 @@
     background: rgba(70, 48, 14, 0.25);
     backdrop-filter: blur(8px);
     display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .active-row {
+    display: flex;
     align-items: center;
     gap: 14px;
   }
@@ -284,6 +289,18 @@
     background: var(--amber);
     box-shadow: 0 0 12px rgba(255, 202, 122, 0.6);
     animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .active-pill {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--amber);
+    padding: 3px 9px;
+    border: 1px solid rgba(255, 202, 122, 0.35);
+    background: rgba(255, 202, 122, 0.08);
+    border-radius: var(--r-pill);
     flex-shrink: 0;
   }
   .active-label {
@@ -297,6 +314,40 @@
     color: var(--muted);
     font-size: 13px;
     margin-left: auto;
+  }
+  .active-progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .active-progress-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 202, 122, 0.12);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+  }
+  .active-progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(255, 202, 122, 0.6), var(--amber));
+    border-radius: var(--r-pill);
+    transition: width 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s;
+  }
+  .active-banner.visible .active-progress-fill {
+    width: var(--target, 0%);
+  }
+  .active-progress-text {
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+  .active-progress-text .muted {
+    color: var(--muted);
+    font-weight: 500;
   }
 
   /* ── Metrics Strip ── */
@@ -692,8 +743,8 @@
     .ms-row { grid-template-columns: 1fr; gap: 6px; }
     .section-head { flex-direction: column; align-items: start; }
     .section-note { text-align: left; }
-    .active-banner { flex-wrap: wrap; }
-    .active-desc { margin-left: 0; }
+    .active-row { flex-wrap: wrap; }
+    .active-desc { margin-left: 0; width: 100%; }
   }
 </style>
 </head>
@@ -747,10 +798,19 @@
   </section>
 
   <!-- ACTIVE WORK BANNER -->
-  <div class="active-banner reveal">
-    <span class="active-dot"></span>
-    <span class="active-label">M3 &mdash; Bootstrap: Automation VM + EliteDesk</span>
-    <span class="active-desc">Manual provision of the execution host and bare-metal utility node</span>
+  <div class="active-banner reveal" style="--target: 13%">
+    <div class="active-row">
+      <span class="active-dot"></span>
+      <span class="active-pill">In progress</span>
+      <span class="active-label">M3 &mdash; Bootstrap: Automation VM + EliteDesk</span>
+      <span class="active-desc">Manual provision of the execution host and bare-metal utility node</span>
+    </div>
+    <div class="active-progress">
+      <div class="active-progress-track">
+        <div class="active-progress-fill"></div>
+      </div>
+      <span class="active-progress-text">2 of 15 tasks</span>
+    </div>
   </div>
 
   <!-- METRICS STRIP -->

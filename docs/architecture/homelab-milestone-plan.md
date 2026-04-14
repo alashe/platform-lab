@@ -4,7 +4,7 @@ Authoritative milestone plan for the `platform-lab` project.
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
 > **Last updated:** 2026-04-13
-> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (not started) · M2 complete · restore test deferred to M3 (first platform VM)
+> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (in progress) · M2 complete · restore test deferred to M3 (first platform VM)
 ---
 
 ## Status Key
@@ -208,8 +208,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| Automation VM provisioned manually on pve02 | 🔲 | Bootstrap exception — Terraform cannot provision its own execution host |
-| Debian 13 installed and accessible via SSH | 🔲 | |
+| Automation VM provisioned manually on pve02 | ✅ | Bootstrap exception — Terraform cannot provision its own execution host · auto01 (VM 104) cloned from template 2026-04-13 |
+| Debian 13 installed and accessible via SSH | ✅ | 2026-04-13 |
 | Baseline host security configured on Automation VM | 🔲 | |
 | Ansible installed and functional on Automation VM | 🔲 | |
 | Automation VM added to Ansible homelab inventory | 🔲 | |
