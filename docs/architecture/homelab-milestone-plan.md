@@ -3,7 +3,7 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-14
+> **Last updated:** 2026-04-15
 > **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (in progress) · M2 complete · restore test deferred to M3 (first platform VM)
 ---
 
@@ -216,6 +216,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Automation VM reachable via `ansible auto01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
 | Ansible Vault file created and encrypted | 🔲 | |
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
+| Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M11 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
 | EliteDesk reachable via `ansible qdev01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
@@ -353,6 +354,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | `ansible/playbooks/baseline.yml` written and tested | 🔲 | |
+| Log rotation policy enforced by baseline role | 🔲 | `/etc/logrotate.d/homelab-defaults` — size caps + retention on `/var/log`; prevents disk-fill independent of central shipping |
 | `ansible/playbooks/docker.yml` written and tested | 🔲 | |
 | `ansible/playbooks/monitoring-target.yml` written and tested | 🔲 | |
 | `ansible/playbooks/utility-node.yml` written and tested | 🔲 | |
@@ -411,6 +413,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Scenario 6 — disk space alert drill | 🔲 | |
 | Scenario 7 — stress test observability drill | 🔲 | Run `stress-test.yml` (cpu/memory/io/all); verify metrics reflect load and alerts fire at thresholds |
 | Scenario 8 — Ansible compliance audit | 🔲 | |
+| Scenario 9 — automated power cycling drill | 🔲 | qdev01 orchestrates graceful shutdown (SSH `shutdown -h`) + WoL wake of pve01/pve02 on cron schedule; verify VMs come back healthy via Uptime Kuma/Alertmanager (requires M7). Prereq: WoL enabled on pve01/pve02 NICs (BIOS + `ethtool wol g`) and MACs recorded — capture opportunistically on next node reboot. Cluster safe: QDevice + one node = quorum during asymmetric cycling |
 | Pi-hole failover tested | 🔲 | Utility VM down, EliteDesk serves DNS |
 | RTO measured and recorded | 🔲 | Update `backup-restore.md` |
 | All docs updated to reflect actual build | 🔲 | |

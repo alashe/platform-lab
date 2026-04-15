@@ -123,6 +123,29 @@ Default configuration applied by the `baseline` role.
 
 ---
 
+## Log Rotation
+
+Applied via the `baseline` role to all managed hosts. Local rotation is enforced independently of central log shipping to Loki — the two layers protect against different failure modes.
+
+| Setting | Value | Reason |
+|---|---|---|
+| Rotation trigger | size `100M` OR weekly, whichever first | Bounds disk growth between rotations |
+| Retained copies | `4` | ~1 month of history at weekly cadence |
+| Compression | `gzip`, delayed 1 rotation | Current + previous readable without decompression |
+| `missingok` | enabled | Role runs safely on hosts that haven't yet generated a given log |
+| `notifempty` | enabled | No empty rotations |
+| `/etc/logrotate.d/homelab-defaults` | owned by role | Drop-in override for package defaults |
+
+> **Why local rotation when logs ship to Loki:** Promtail tails files but does not truncate them. A broken agent, a Loki outage, or a network partition leaves logs accumulating locally until the disk fills. Local rotation is the belt; central shipping is the suspenders.
+
+**Verify:**
+
+```bash
+sudo logrotate -d /etc/logrotate.d/homelab-defaults
+```
+
+---
+
 ## Docker Hosts
 
 Applies to hosts running Docker: `util01`, `mon01`, `auto01`, `qdev01`, `aws-web01`.

@@ -954,7 +954,7 @@
       </div>
       <div class="service-card reveal" style="--d:5">
         <h3>Monitoring + SLO stack</h3>
-        <p>Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma arrive as a coherent observability milestone. Four SLOs defined with availability SLIs, dual-window burn rate alerting, and Grafana error budget panels.</p>
+        <p>Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma arrive as a coherent observability milestone. Four SLOs defined with availability SLIs, dual-window burn rate alerting, and Grafana error budget panels. Logs use a two-layer strategy &mdash; local <code>logrotate</code> in the baseline role prevents disk-fill; Promtail ships to Loki for search.</p>
         <span class="status planned">Planned &middot; M7</span>
       </div>
       <div class="service-card reveal" style="--d:6">
