@@ -24,6 +24,16 @@ Applied via Ansible to `/etc/ssh/sshd_config` on all managed hosts.
 
 > Changes to `sshd_config` require `sshd` reload. The Ansible task notifies a handler to reload automatically.
 
+> **Note on `Protocol`:** on OpenSSH ≥ 7.6 (Debian 13 ships 9.9), the `Protocol` directive was removed and SSHv1 is unavailable by software. No configuration is required; the row is retained for historical reference.
+
+**Verify:**
+
+```bash
+sudo sshd -T | grep -Ei 'passwordauth|permitroot|pubkeyauth|clientalive|allowusers'
+```
+
+Effective values should match the table above.
+
 ---
 
 ## Required Packages

@@ -3,7 +3,7 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-13
+> **Last updated:** 2026-04-14
 > **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (in progress) · M2 complete · restore test deferred to M3 (first platform VM)
 ---
 
@@ -213,10 +213,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Baseline host security configured on Automation VM | 🔲 | |
 | Ansible installed and functional on Automation VM | 🔲 | |
 | Automation VM added to Ansible homelab inventory | 🔲 | |
+| Automation VM reachable via `ansible auto01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
 | Ansible Vault file created and encrypted | 🔲 | |
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
+| EliteDesk reachable via `ansible qdev01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified — depends on Debian install above |
 | PBS backup job added for auto01 | 🔲 | |
 | Restore test verified — RTO measured | 🔲 | Moved from M2 — auto01 is the first platform VM with a standard PBS backup job; use it to validate the restore chain and measure RTO |
@@ -238,6 +240,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `terraform/modules/proxmox_vm/` written | 🔲 | |
 | Utility VM provisioned via `terraform apply` | 🔲 | First Terraform-managed VM in the environment |
 | Utility VM added to Ansible homelab inventory | 🔲 | |
+| Utility VM reachable via `ansible util01 -m ping` | 🔲 | Pre-rotation from Fedora workstation, post-rotation from `auto01` |
 | Baseline host security configured on Utility VM | 🔲 | Via Ansible |
 | Docker CE + Compose installed on Utility VM | 🔲 | Via Ansible |
 | Docker CE + Compose installed on EliteDesk | 🔲 | Via Ansible — same role as Utility VM |
@@ -299,6 +302,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | Monitoring VM provisioned on pve02 — disk on `nfs-shared` pool | 🔲 | Disk on shared NFS pool enables live migration (ADR-023) |
+| Monitoring VM reachable via `ansible mon01 -m ping` | 🔲 | From `auto01` (execution host post-M4) |
 | Prometheus running, scraping all hosts | 🔲 | Utility VM · EliteDesk · Automation VM |
 | node_exporter on all managed hosts | 🔲 | |
 | cAdvisor on Utility VM and EliteDesk | 🔲 | |
@@ -377,6 +381,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `terraform/environments/aws-dev/` configured | 🔲 | |
 | `terraform apply` produces running EC2 instance | 🔲 | |
 | `aws-dev` environment added to CI/CD pipeline | 🔲 | Extends M5 pipeline |
+| aws-web01 reachable via `ansible aws-web01 -m ping` | 🔲 | From `auto01` via AWS inventory |
 | Ansible `baseline.yml` runs clean on EC2 | 🔲 | |
 | Ansible `docker.yml` runs clean on EC2 | 🔲 | |
 | nginx monitoring target running on EC2 | 🔲 | |
@@ -427,6 +432,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Item | Status | Notes |
 |---|---|---|
 | Host placement decision made and documented in ADR | 🔲 | Placement must fit existing topology — no exceptions |
+| llm01 reachable via `ansible llm01 -m ping` | 🔲 | From `auto01` — prereq for Ollama role |
 | Ansible role: install and configure Ollama | 🔲 | systemd service management · resource constraints · model pull on first run |
 | Ollama role idempotent and re-runnable | 🔲 | |
 | Prometheus scrape config addition | 🔲 | Confirm which metrics Ollama exposes natively |
