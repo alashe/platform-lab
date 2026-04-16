@@ -398,3 +398,68 @@ Proxmox HA live migration (`migrate` policy) requires that both nodes can access
 **Proxmox storage pool:** Added on both nodes via Datacenter → Storage → Add → NFS. Pool name: `nfs-shared`. Content type: `Disk image`. See `docs/operations/proxmox-setup.md`.
 
 **Rejected:** Ceph — requires three nodes minimum for production; over-engineered for this scale. Shared storage for all VMs — makes NAS a hard runtime dependency for the whole cluster. iSCSI — higher complexity than NFS for the same outcome in this topology.
+
+---
+
+## ADR-024 — Tempo + OpenTelemetry as the tracing layer (supersedes Jaeger)
+
+**Decision:** When the third observability pillar is activated (planned at M10+), use **Grafana Tempo** as the trace storage backend and **OpenTelemetry** as the instrumentation standard. The previously deferred Jaeger entry in M7 is superseded.
+
+**Reasoning:**
+The platform's metrics (Prometheus) and logs (Loki) layers are committed in M7. Distributed tracing — the third pillar — was originally placeholder-deferred as Jaeger pending a multi-service request path to make tracing meaningful. With M10 (AWS mirror) and M12 (LLM triage workflow) introducing real cross-system span chains, the deferral is closing. The choice of backend is now decision-relevant.
+
+Tempo is the correct choice over Jaeger for three reasons:
+
+1. **Grafana-stack-native.** Tempo stores traces in object storage (local filesystem or S3), shares Grafana as the query UI, and provides trace-to-log correlation with Loki out of the box. Jaeger requires its own UI and does not share the Loki/Prometheus correlation surface — more glue, less integration.
+2. **OpenTelemetry alignment.** OTel is the universal instrumentation standard. Instrumenting once with OTel produces spans consumable by Tempo today and portable to any other OTel-compatible backend later. This is not a Tempo-specific lock-in.
+3. **Operational continuity.** The same Grafana instance already serving Prometheus dashboards and Loki log queries gains a third datasource. No new UI, no new authentication surface, no new dashboard pattern for operators to learn.
+
+**Activation sequence:**
+- **M7:** Deferred line item updated from Jaeger to Tempo + OTel collector. Deployment held until cross-system spans exist.
+- **M10:** Tempo deployed on `mon01`. OTel collector running. First end-to-end trace exported from a cross-system path (Uptime Kuma probe → EC2 nginx target → response). Trace-to-log correlation with Loki verified in Grafana.
+- **M11:** A reliability drill captures an end-to-end trace as a portfolio artifact.
+- **M12:** The LLM triage workflow is instrumented end-to-end using OTel Gen-AI semantic conventions. Spans visible in Tempo with trace-to-Loki correlation.
+
+**OTel Gen-AI semantic conventions** are still flagged experimental as of v1.36.0. Instrumentation library versions will be pinned and the stability caveat documented in the M12 instrumentation ADR.
+
+**Rejected:**
+- **Jaeger** — viable but requires its own UI, lacks native Grafana integration, and does not share the Loki correlation surface. The Grafana-stack-native choice (Tempo) reduces operational surface for equivalent capability.
+- **Vendor SaaS APM (Datadog, Honeycomb, etc.)** — data-locality concerns mirror the M12 reasoning for local LLM inference; cost is not justified for lab scale; instrumentation lock-in is undesirable.
+- **No tracing layer at all** — leaves the platform at two of three observability pillars, which is below 2026 platform-engineering hiring expectations at mid/senior level.
+
+---
+
+## ADR-025 — AWS Cost Anomaly Detection routed through Alertmanager
+
+**Decision:** AWS Cost Anomaly Detection is provisioned via Terraform as part of M10 and its notifications are routed through SNS to a webhook bridge that posts to the homelab Alertmanager. Cost anomalies are treated as a first-class operational signal, surfaced on the same alerting plane as service-down alerts.
+
+**Reasoning:**
+ADR-011 established the cost-management baseline: pre-provision estimate, static AWS Budget alert at $10/mo, and a teardown habit. That baseline catches *ceiling violations* but not *anomalous spend*. A misconfigured Lambda or runaway service can spend $9/day for three days before the static budget alert fires.
+
+Cost Anomaly Detection closes the gap. It applies AWS-managed ML to per-service spend patterns and emits anomaly events when actual spend diverges from baseline. Routing those events through the same Alertmanager that handles service-down alerts produces a single coherent operational surface — no separate cost dashboard to remember to check, no new notification channel, no separate triage path.
+
+**Routing topology:**
+```
+AWS Cost Anomaly Detection monitor
+  └─ SNS topic
+      └─ webhook bridge (Lambda or container)
+          └─ Alertmanager webhook
+              └─ existing routing rules (severity: cost-anomaly)
+```
+
+The bridge is a small piece of infrastructure that translates SNS notification format into Alertmanager-compatible JSON. Lambda is the natural choice because cost-anomaly events are infrequent and Lambda's cost is negligible at this volume. A long-running container could host it instead if Lambda usage is being avoided for portfolio reasons; the decision belongs in the implementation, not this ADR.
+
+**Severity treatment:**
+A separate severity label (`cost-anomaly`) keeps these alerts distinguishable from service-health alerts in Alertmanager routing and in Grafana queries. They share the alerting plane but not the same routing tree — service-down and cost-anomaly have different urgency and different on-call response.
+
+**Relationship to ADR-011:**
+ADR-011 stays in force. The static $10/mo Budget alert remains the CI/CD precondition (pipeline cannot apply without it). Cost Anomaly Detection is additive — it covers the anomalous-spend gap that static thresholds cannot.
+
+**Drill exercise:**
+M11 includes a synthetic cost-anomaly drill — either a manually triggered SNS event or a deliberately misconfigured low-cost resource — to verify the SNS → webhook → Alertmanager path end-to-end. Without an exercised path, the integration is an unproven claim.
+
+**Rejected:**
+- **Static budget thresholds only** — covers ceiling violations but not anomaly patterns; misses the failure mode this ADR addresses.
+- **Email-only Cost Anomaly notifications** — fragments the operational surface; cost would be checked in a different inbox than service alerts.
+- **CloudWatch Alarms on per-service spend** — possible but more brittle than Cost Anomaly Detection's managed baselines; fires on absolute thresholds rather than learned patterns.
+- **Third-party FinOps tooling (Vantage, CloudHealth, etc.)** — adds vendor surface and cost; out of scope for lab scale.

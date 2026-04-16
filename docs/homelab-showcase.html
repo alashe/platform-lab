@@ -954,7 +954,7 @@
       </div>
       <div class="service-card reveal" style="--d:5">
         <h3>Monitoring + SLO stack</h3>
-        <p>Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma arrive as a coherent observability milestone. Four SLOs defined with availability SLIs, dual-window burn rate alerting, and Grafana error budget panels. Logs use a two-layer strategy &mdash; local <code>logrotate</code> in the baseline role prevents disk-fill; Promtail ships to Loki for search.</p>
+        <p>Prometheus, Grafana, Alertmanager, Loki, and Uptime Kuma arrive as a coherent observability milestone. Four SLOs defined with availability SLIs, dual-window burn rate alerting, and Grafana error budget panels. Logs use a two-layer strategy &mdash; local <code>logrotate</code> in the baseline role prevents disk-fill; Promtail ships to Loki for search. Tempo + OpenTelemetry complete the third observability pillar, with trace-to-log correlation in Grafana once cross-system spans exist.</p>
         <span class="status planned">Planned &middot; M7</span>
       </div>
       <div class="service-card reveal" style="--d:6">
@@ -964,7 +964,7 @@
       </div>
       <div class="service-card reveal" style="--d:7">
         <h3>AWS parity track</h3>
-        <p>A cloud mirror extends the story beyond the local lab and proves the same operational thinking can cross into AWS.</p>
+        <p>A cloud mirror extends the story beyond the local lab and proves the same operational thinking can cross into AWS. Cost is treated as a first-class operational signal &mdash; static budget gates pre-spend, Cost Anomaly Detection routed through the same Alertmanager that handles service-down alerts.</p>
         <span class="status planned">Planned &middot; M10</span>
       </div>
       <div class="service-card reveal" style="--d:8">
@@ -1056,7 +1056,7 @@
       </div>
       <div class="stack-card reveal" style="--d:3">
         <h3>Observability</h3>
-        <p>Prometheus, Grafana, Loki, Alertmanager, Uptime Kuma, and SLO thinking as the reliability spine.</p>
+        <p>Prometheus, Grafana, Loki, Alertmanager, Uptime Kuma, Tempo, and OpenTelemetry &mdash; metrics, logs, and traces with SLO thinking as the reliability spine.</p>
       </div>
       <div class="stack-card reveal" style="--d:4">
         <h3>Recovery</h3>

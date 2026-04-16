@@ -272,7 +272,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Placeholder playbook scaffolded so CI has a target | 🔲 | Replaced by real playbooks at Milestone 9 |
 | Pipeline documented in `terraform/README.md` | 🔲 | |
 | AWS cost estimate documented before first apply | 🔲 | See ADR-011 · baseline estimate for EC2, S3 |
-| AWS Budget alert configured | 🔲 | Alert at $10/mo — before pipeline can trigger `terraform apply` |
+| AWS Budget alert configured | 🔲 | Alert at $10/mo — before pipeline can trigger `terraform apply`. Cost Anomaly Detection added at M10 once real spend exists — see ADR-025 |
 | `PUBLIC_REPO_PAT` secret configured in private repo | 🔲 | PAT with `repo` scope on the public repo |
 | `PUBLIC_REPO` variable configured in private repo | 🔲 | Set to `<username>/<public-repo-name>` |
 | Sync workflow tested — Milestone 0 docs appear in public repo | 🔲 | First live run of `sync-public.yml` |
@@ -326,7 +326,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Alertmanager burn rate rules active for all three SLOs | 🔲 | Fast burn (1h) and slow burn (6h) windows |
 | Grafana error budget panels created for each SLO | 🔲 | One gauge panel per SLI — % budget remaining |
 | `docs/operations/monitoring-runbook.md` reflects actual state | 🔄 | Doc written; lab not yet built |
-| Jaeger all-in-one container deployed on Monitoring VM | ⏸ | Deferred — tracing adds most value once multi-service calls exist (M10+); revisit after AWS mirror |
+| Tempo + OpenTelemetry collector deployed on Monitoring VM | ⏸ | Deferred — tracing adds most value once multi-service calls exist (M10+); revisit after AWS mirror. Tempo chosen over Jaeger for Grafana-stack-native trace-to-log correlation with Loki — see ADR-024 |
 
 ---
 
@@ -396,6 +396,11 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `make tf-apply ENV=aws-dev` functional | 🔲 | |
 | `docs/setup/aws-prereqs.md` written | 🔲 | |
 | `terraform/README.md` reflects actual module behavior | 🔄 | Doc written; not yet verified against live runs |
+| AWS Cost Anomaly Detection monitor (Terraform) | 🔲 | Per-service anomaly detection on top of the static M5 budget — see ADR-025 |
+| SNS → webhook bridge for Cost Anomaly notifications | 🔲 | Lambda or container; routes anomaly events to homelab Alertmanager webhook |
+| Alertmanager routing rule for `severity: cost-anomaly` | 🔲 | Treats cost spikes as a first-class operational signal alongside service-down alerts |
+| Tempo + OpenTelemetry collector deployed on mon01 | 🔲 | Activates the M7 deferred entry — first cross-system spans now exist (homelab → AWS request paths) |
+| OTel instrumentation on EC2 nginx target | 🔲 | First end-to-end traced workflow: Uptime Kuma probe → EC2 nginx → response. Spans exported to Tempo; trace-to-log correlation with Loki verified in Grafana |
 
 ---
 
@@ -422,7 +427,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Public repo README polished | 🔲 | Standalone context for portfolio presentation |
 | Public repo walkable as portfolio artifact | 🔲 | No broken links, no placeholder content, no internal references |
 | Repo walkable live in interview | 🔲 | |
-| Jaeger trace from reliability drill | 🔲 | Optional — instrument one service (e.g. EC2 nginx); export trace as portfolio artifact |
+| Tempo trace from reliability drill | 🔲 | Capture an end-to-end trace from one drill scenario (e.g. service-down → alert → triage); export from Tempo as a portfolio artifact |
+| Cost-anomaly alert exercised in a drill | 🔲 | Synthetic AWS spend spike (or simulated anomaly event) verifies the SNS → webhook → Alertmanager path end-to-end |
 
 ---
 
@@ -446,8 +452,14 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Webhook integration: Alertmanager → script → Ollama API → triage output | 🔲 | Phase 4 — highest variance; scope creep risk; flag and defer polish |
 | Triage script fails gracefully if Ollama is unavailable | 🔲 | No dependency loop |
 | Triage script committed to repo with runbook entry | 🔲 | |
+| Triage workflow instrumented end-to-end with OpenTelemetry | 🔲 | Spans: `alert_triage` (root) → `loki_query` → `runbook_load` → `prompt_build` → `ollama_inference` → `notification_dispatch`. Use OTel Gen-AI semantic conventions on the Ollama span (`gen_ai.request.model`, `gen_ai.usage.input_tokens`, etc.) |
+| OpenAI SDK pointed at Ollama OpenAI-compat endpoint for auto-instrumentation | 🔲 | Removes need for manual span code on the LLM call; `opentelemetry-instrumentation-openai-v2` emits gen_ai spans automatically. Override `gen_ai.provider.name` to `"ollama"` if accuracy matters |
+| `gen_ai.input.messages` / `gen_ai.output.messages` capture defaulted off | 🔲 | Data-locality discipline — prompt content includes hostnames/IPs from Loki and runbook injection. Enable per-incident only |
+| Trace-to-log correlation verified in Grafana (Tempo ↔ Loki) | 🔲 | Click from a slow `ollama_inference` span to the Loki log lines from that same triage event |
+| OTel + Gen-AI semconv versions pinned in instrumentation requirements | 🔲 | Gen-AI semconv is still flagged experimental; pin and document in ADR per stability guidance |
 | `docs/capstone/ai-ops-integration.md` written | 🔲 | Framed as AIOps-adjacent infrastructure work, not ML engineering |
 | ADR: local inference vs. external API | 🔲 | Rationale: cost · data locality · operational control · learning value |
+| ADR: OTel instrumentation approach for LLM workflow | 🔲 | OpenAI-SDK-via-compat-endpoint vs. manual spans; Gen-AI semconv version pinning; data-locality stance on message-capture attributes |
 | 2027 Kubernetes evolution path documented in portfolio doc | 🔲 | Ollama on k3s + ArgoCD — note intended direction without over-engineering now |
 
 ---
@@ -456,10 +468,10 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Reason |
 |---|---|
-| Jaeger (full deployment) | Deferred to M10+ — tracing value is low until multi-service request paths exist; all-in-one container planned for Monitoring VM once AWS mirror is live |
+| Jaeger | Superseded by Tempo + OpenTelemetry commitment in M7 — see ADR-024 |
 | Kubernetes | Complexity not justified for service count — see ADR-001 |
 | Ansible AWX / Tower | Overkill for single-operator homelab |
-| HashiCorp Vault | `ansible-vault` sufficient for this scope |
+| HashiCorp Vault | `ansible-vault` sufficient for current scope. Adoption proposal captured in `docs/planning/hashicorp-vault-milestone.md` — revisit when first consumer workload with rotation-worthy secrets is being deployed |
 | Multi-region AWS | Not needed to demonstrate the core skills |
 | Internal TLS / local CA | Browser warnings on Proxmox, TrueNAS, PBS, and Grafana are acceptable during build; required before app01 services (Nextcloud etc.) are in use — see ADR-019 |
 
