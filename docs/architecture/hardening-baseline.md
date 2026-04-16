@@ -12,6 +12,14 @@ User accounts and SSH key management are in [access-control.md](access-control.m
 
 Applied via Ansible to `/etc/ssh/sshd_config` on all managed hosts.
 
+**Preliminary — back up existing config before first apply:**
+
+```bash
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+```
+
+Run on each host before its first `baseline` role execution. Provides a known-good rollback target if the new config locks the active session out.
+
 | Setting | Value | Reason |
 |---|---|---|
 | `PasswordAuthentication` | `no` | Key-only auth — eliminates brute-force surface |

@@ -210,10 +210,10 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | Automation VM provisioned manually on pve02 | ✅ | Bootstrap exception — Terraform cannot provision its own execution host · auto01 (VM 104) cloned from template 2026-04-13 |
 | Debian 13 installed and accessible via SSH | ✅ | 2026-04-13 |
-| Baseline host security configured on Automation VM | 🔲 | |
-| Ansible installed and functional on Automation VM | 🔲 | |
-| Automation VM added to Ansible homelab inventory | 🔲 | |
-| Automation VM reachable via `ansible auto01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
+| Baseline host security configured on Automation VM | ✅ | SSH hardening via drop-in at `/etc/ssh/sshd_config.d/10-platform-lab-baseline.conf` · 2026-04-15 |
+| Ansible installed and functional on Automation VM | ✅ | Debian apt · ansible 10 / ansible-core 2.17 + `arensb.truenas` and `community.proxmox` collections · 2026-04-14 |
+| Automation VM added to Ansible homelab inventory | ✅ | 2026-04-15 |
+| Automation VM reachable via `ansible auto01 -m ping` | ✅ | From Fedora workstation (pre-M4 execution host) · 2026-04-15 |
 | Ansible Vault file created and encrypted | 🔲 | |
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M11 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
@@ -224,7 +224,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | PBS backup job added for auto01 | 🔲 | |
 | Restore test verified — RTO measured | 🔲 | Moved from M2 — auto01 is the first platform VM with a standard PBS backup job; use it to validate the restore chain and measure RTO |
 | `docs/operations/backup-restore.md` reflects actual state | 🔄 | Moved from M2 — finalize schedules, restore validation, and measured RTO/RPO after restore test above |
-| `docs/operations/auto01-setup.md` reflects actual build | 🔄 | Doc written ahead of build — verify and remove aspirational notice when complete |
+| `docs/operations/auto01-setup.md` reflects actual build | ✅ | Fully validated against live build · 2026-04-15 |
 | `docs/operations/utility-node.md` scaffolded | 🔲 | Full content added after M4 when Utility VM exists |
 
 ---
@@ -235,7 +235,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 | Item | Status | Notes |
 |---|---|---|
-| Terraform installed on Automation VM | 🔲 | |
+| Terraform installed on Automation VM | ✅ | Terraform 1.14.8 via HashiCorp apt repo · 2026-04-15 (moved from M4 to M3 scope) |
 | Terraform provider and version constraints defined | 🔲 | |
 | `terraform/environments/homelab/` scaffolded | 🔲 | |
 | `terraform/modules/proxmox_vm/` written | 🔲 | |
