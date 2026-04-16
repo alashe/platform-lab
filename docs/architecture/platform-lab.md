@@ -79,7 +79,8 @@ The design principle is **operational realism over complexity**: every layer exi
 | `mon01` | pve02 | Observability — independent failure domain | Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
 | `pbs01` | pve01 | Backup server | Proxmox Backup Server |
 | `auto01` | pve02 | Ansible + Terraform execution | Ansible controller · Terraform workspace |
-| `llm01` | TBD at M12 | LLM inference service | Ollama — AI capstone (M12) |
+| `app01` | pve01 | Consumer workload host | Vaultwarden (M11) — sole consumer until 3rd compute node added (ADR-026) |
+| `llm01` | pve02 | LLM inference service | Ollama — AI capstone (M13) |
 
 > Node assignments are recommended defaults, adjusted based on resource availability at build time. **Exception: `pbs01` on `pve01` is confirmed** — its datastore is hosted on the NAS via NFS, so migrating `pbs01` to `pve02` requires no datastore changes.
 
@@ -89,7 +90,7 @@ The design principle is **operational realism over complexity**: every layer exi
 |---|---|---|
 | `win01` (VM ID 111) | pve01 | Retained from pre-platform setup · personal use |
 
-> This VM coexists on the cluster but is outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M12.
+> This VM coexists on the cluster but is outside the platform's automation scope. RAM allocation must be accounted for when sizing platform VMs, particularly `llm01` at M13.
 
 **qdev01 — HP EliteDesk 800 mini — bare-metal roles:**
 

@@ -63,8 +63,9 @@ make validate
 | 8 | Pi-hole Whole-Home Cutover + EliteDesk Secondary DNS | 6, 7 |
 | 9 | Ansible Automation with Vault | 5, 7 |
 | 10 | AWS Infrastructure Mirror (Terraform + Ansible) | 5, 9 |
-| 11 | Reliability Drills and Platform Documentation | 10 |
-| 12 | AI Capstone: LLM Inference as a Managed Platform Service | 5, 7, 11 |
+| 11 | Consumer Workload: Vaultwarden on app01 | 4, 7, 9 |
+| 12 | Reliability Drills and Platform Documentation | 10, 11 |
+| 13 | AI Capstone: LLM Inference as a Managed Platform Service | 5, 7, 12 |
 
 > **Why CI/CD is Milestone 5:** The pipeline is built as soon as Terraform is proven locally, so every subsequent change is delivered through it.
 >
@@ -84,8 +85,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Monitoring VM | pve02 | Observability — must be on separate node from Utility VM |
 | PBS VM | pve01 | Proxmox Backup Server |
 | Automation VM | pve02 | Ansible execution · Terraform workspace |
-| App VM | pve01 | Personal apps — Nextcloud · Paperless (persistent data on NAS) |
-| LLM VM | pve02 | Ollama inference service — M12 capstone (pve02 has RAM headroom) |
+| App VM | pve01 | Vaultwarden — sole consumer workload until a third compute node is added (ADR-026); persistent data on NAS |
+| LLM VM | pve02 | Ollama inference service — M13 capstone (pve02 has RAM headroom) |
 
 **HP Elitedesk 800 mini (bare metal — not a Proxmox node):**
 
@@ -196,7 +197,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Backup jobs configured for available VMs — win01, pbs01 | ✅ | 2026-04-11 |
 | First backup completed and verified | ✅ | win01 (VM 111) backed up to pbs-tank and visible on NAS — 2026-04-11 |
 | Cold-tier copy process implemented | ✅ | Backblaze B2 bucket `platform-lab-pbs-cold` + PBS S3 datastore `pbs-offsite` + weekly pull sync from `pbs-tank` — verified 2026-04-12 |
-| `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M11 live drills |
+| `scripts/restore-check.sh` written | ✅ | Repo-side helper created to standardize restore-drill evidence capture before M12 live drills |
 | `make restore-test` functional | ✅ | Runs the repo-side restore checklist helper; live VM restore validation still pending |
 | `docs/operations/pbs01-setup.md` reflects actual build | ✅ | Updated during live build — B2 cold tier, S3 endpoint quirks, sync job, disk resize all reflect reality — 2026-04-12 |
 
@@ -216,7 +217,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Automation VM reachable via `ansible auto01 -m ping` | ✅ | From Fedora workstation (pre-M4 execution host) · 2026-04-15 |
 | Ansible Vault file created and encrypted | 🔲 | |
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
-| Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M11 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
+| Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M12 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
 | EliteDesk reachable via `ansible qdev01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
@@ -404,7 +405,38 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ---
 
-## Milestone 11 — Reliability Drills and Platform Documentation
+## Milestone 11 — Consumer Workload: Vaultwarden on app01
+
+**Objective:** Deploy and operate Vaultwarden as the platform's first user-facing consumer workload. Establish the operational pattern for app-layer services — internal TLS, SLO definition, monitoring integration, backup coverage, restore drill, runbook. Vaultwarden is the sole consumer workload until a third compute node is added (see ADR-026).
+
+| Item | Status | Notes |
+|---|---|---|
+| `app01` provisioned via Terraform on pve01 | 🔲 | VM 105 · IP `192.168.0.65` · uses `proxmox_vm` module |
+| `app01` reachable via `ansible app01 -m ping` | 🔲 | From `auto01` |
+| Baseline + Docker roles applied to app01 | 🔲 | Reuses existing Ansible roles |
+| Internal CA (`step-ca`) deployed | 🔲 | Activates ADR-019 — first app01 service is the trigger |
+| Local CA root cert installed in client trust stores | 🔲 | Required before browser extensions and mobile clients trust the Vaultwarden cert |
+| TLS cert issued for `vaultwarden.lab` | 🔲 | From internal CA |
+| DNS entry for `vaultwarden.lab` added to Pi-hole local records | 🔲 | Both Pi-hole instances (util01 + qdev01) |
+| Vaultwarden Ansible role written | 🔲 | Docker Compose under `/opt/vaultwarden`; admin token sourced from Ansible Vault |
+| Vaultwarden persistent data on NAS-backed dataset | 🔲 | `tank/apps/vaultwarden` — created via Terraform per ADR-021 |
+| Vaultwarden deployed and reachable on `vaultwarden.lab` | 🔲 | HTTPS with internal-CA cert |
+| Bitwarden client(s) connected and verified end-to-end | 🔲 | Browser extension + mobile client login, vault sync |
+| node_exporter + cAdvisor scraped on app01 | 🔲 | Reuses existing Prometheus scrape configs |
+| Vaultwarden access logs shipped to Loki via Promtail | 🔲 | Same pattern as other services |
+| Failed-login alert rule (Loki → Alertmanager) | 🔲 | Threshold tuned to suppress single-user typos; flag credential-stuffing patterns |
+| Availability alert rule | 🔲 | HTTP 5xx > 1% over 5m, or endpoint unreachable > 2m |
+| Uptime Kuma HTTP check on Vaultwarden endpoint | 🔲 | |
+| Grafana dashboard: request rate · auth attempts · error rate · response latency | 🔲 | |
+| SLO defined: 99.5% monthly availability | 🔲 | Added to `docs/sre/slo-definitions.md` with SLI, error budget, burn-rate alerts |
+| PBS backup job for app01 (daily) | 🔲 | Includes Vaultwarden volume |
+| Restore drill performed; RTO recorded | 🔲 | Verified Vaultwarden vault contents intact post-restore |
+| `docs/operations/vaultwarden-runbook.md` written | 🔲 | Start/stop · backup/restore · common alerts · client reset |
+| ADR-026 written | ✅ | Captured in `decisions.md` — Vaultwarden as sole consumer + 3-node gate |
+
+---
+
+## Milestone 12 — Reliability Drills and Platform Documentation
 
 **Objective:** Demonstrate operational readiness and produce an interview-ready platform project.
 
@@ -419,6 +451,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Scenario 7 — stress test observability drill | 🔲 | Run `stress-test.yml` (cpu/memory/io/all); verify metrics reflect load and alerts fire at thresholds |
 | Scenario 8 — Ansible compliance audit | 🔲 | |
 | Scenario 9 — automated power cycling drill | 🔲 | qdev01 orchestrates graceful shutdown (SSH `shutdown -h`) + WoL wake of pve01/pve02 on cron schedule; verify VMs come back healthy via Uptime Kuma/Alertmanager (requires M7). Prereq: WoL enabled on pve01/pve02 NICs (BIOS + `ethtool wol g`) and MACs recorded — capture opportunistically on next node reboot. Cluster safe: QDevice + one node = quorum during asymmetric cycling |
+| Scenario 10 — Vaultwarden down drill | 🔲 | Real-consumer drill: stop Vaultwarden container, verify alert fires, restore from PBS, measure end-to-end MTTR; postmortem recorded |
 | Pi-hole failover tested | 🔲 | Utility VM down, EliteDesk serves DNS |
 | RTO measured and recorded | 🔲 | Update `backup-restore.md` |
 | All docs updated to reflect actual build | 🔲 | |
@@ -432,7 +465,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ---
 
-## Milestone 12 — AI Capstone: LLM Inference as a Managed Platform Service
+## Milestone 13 — AI Capstone: LLM Inference as a Managed Platform Service
 
 **Objective:** Provision and operate an LLM inference service (Ollama) as a managed platform workload — demonstrating that any service class can be onboarded, monitored, and integrated into operational workflows using the existing stack.
 
@@ -471,7 +504,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Jaeger | Superseded by Tempo + OpenTelemetry commitment in M7 — see ADR-024 |
 | Kubernetes | Complexity not justified for service count — see ADR-001 |
 | Ansible AWX / Tower | Overkill for single-operator homelab |
-| HashiCorp Vault | `ansible-vault` sufficient for current scope. Adoption proposal captured in `docs/planning/hashicorp-vault-milestone.md` — revisit when first consumer workload with rotation-worthy secrets is being deployed |
+| HashiCorp Vault | `ansible-vault` sufficient for current scope. Adoption proposal captured in `docs/planning/hashicorp-vault-milestone.md` — revisit when M11 (Vaultwarden) introduces the first consumer workload with rotation-worthy secrets |
 | Multi-region AWS | Not needed to demonstrate the core skills |
 | Internal TLS / local CA | Browser warnings on Proxmox, TrueNAS, PBS, and Grafana are acceptable during build; required before app01 services (Nextcloud etc.) are in use — see ADR-019 |
 

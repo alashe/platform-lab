@@ -48,8 +48,8 @@ This document is written at Milestone 0. Apply these names at first configuratio
 | `mon01` | 102 | pve02 | Monitoring — Prometheus · Grafana · Alertmanager · Loki · Uptime Kuma |
 | `pbs01` | 103 | pve01 | Proxmox Backup Server |
 | `auto01` | 104 | pve02 | Ansible execution · Terraform workspace |
-| `app01` | 105 | pve01 | Self-hosted personal apps — Docker Compose services |
-| `llm01` | 106 | TBD at M12 | LLM inference service — Ollama · AI capstone (M12) |
+| `app01` | 105 | pve01 | Vaultwarden (M11) — sole consumer workload until 3rd compute node added (ADR-026) |
+| `llm01` | 106 | pve02 | LLM inference service — Ollama · AI capstone (M13) |
 
 > Node assignments are defaults. Adjust at build time based on resource availability. The exception is `pbs01` on `pve01` — confirmed per architecture doc.
 
@@ -143,7 +143,7 @@ DNS A records are managed as Pi-hole local DNS entries. Activated at Milestone 8
 | 103 | `pbs01` | PBS VM |
 | 104 | `auto01` | Automation VM |
 | 105 | `app01` | Apps VM |
-| 106 | `llm01` | LLM Inference VM (M12) |
+| 106 | `llm01` | LLM Inference VM (M13) |
 | 111 | `win01` | Retained Windows 11 Pro VM (non-platform) |
 
 Reserved ranges:

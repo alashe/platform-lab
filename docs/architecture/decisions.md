@@ -281,7 +281,7 @@ The DS212 (~2012 hardware, ~2TB usable) and DS207 (~2008 hardware, ~1TB drives) 
 
 `util01` is also mirrored on `qdev01` (bare metal) for DNS failover. That mirror would be unnecessarily complicated if it had to replicate a full personal app stack.
 
-**Apps on app01:** Linkding · Wallabag · Navidrome · Paperless · Audiobookshelf · Nextcloud · Netbox
+**Apps on app01:** Vaultwarden — sole consumer workload until a third compute node is added (see ADR-026).
 
 **Rejected:** Running all containers on `util01` (conflates platform and personal workloads; complicates the bare-metal mirror; resource contention risk).
 
@@ -294,7 +294,7 @@ The DS212 (~2012 hardware, ~2TB usable) and DS207 (~2008 hardware, ~1TB drives) 
 **Reasoning:**
 Internal admin UIs (Proxmox, TrueNAS, PBS, Grafana) are single-operator, LAN-only, and accessed infrequently. The operational overhead of a local CA is not justified during the build phase when these are the only HTTPS surfaces. Browser warnings are a minor inconvenience, not a security risk in this context.
 
-`app01` services change the calculus: Nextcloud requires HTTPS to function correctly, and services like Paperless and Wallabag behave better with it. A local CA becomes necessary before `app01` is usable.
+`app01` services change the calculus: Vaultwarden requires HTTPS for browser-extension and mobile-client trust, and any future app01 workload (gated on the third-node decision in ADR-026) will benefit similarly. A local CA becomes necessary before `app01` is usable.
 
 **Implementation (when scheduled):**
 - Run `step-ca` (Smallstep) as a lightweight CA — suitable for a single VM or container
@@ -302,7 +302,7 @@ Internal admin UIs (Proxmox, TrueNAS, PBS, Grafana) are single-operator, LAN-onl
 - Issue certs for Proxmox, TrueNAS, PBS, Grafana, and each `app01` service
 - Once root is trusted on client devices, all internally issued certs are trusted automatically
 
-**Rejected:** Purchasing public TLS certs for internal hostnames (unnecessary cost and complexity for `.lab` domain); leaving all services on self-signed certs permanently (unacceptable for Nextcloud and other app01 services).
+**Rejected:** Purchasing public TLS certs for internal hostnames (unnecessary cost and complexity for `.lab` domain); leaving all services on self-signed certs permanently (unacceptable for Vaultwarden client compatibility and any future app01 service).
 
 ---
 
@@ -406,7 +406,7 @@ Proxmox HA live migration (`migrate` policy) requires that both nodes can access
 **Decision:** When the third observability pillar is activated (planned at M10+), use **Grafana Tempo** as the trace storage backend and **OpenTelemetry** as the instrumentation standard. The previously deferred Jaeger entry in M7 is superseded.
 
 **Reasoning:**
-The platform's metrics (Prometheus) and logs (Loki) layers are committed in M7. Distributed tracing — the third pillar — was originally placeholder-deferred as Jaeger pending a multi-service request path to make tracing meaningful. With M10 (AWS mirror) and M12 (LLM triage workflow) introducing real cross-system span chains, the deferral is closing. The choice of backend is now decision-relevant.
+The platform's metrics (Prometheus) and logs (Loki) layers are committed in M7. Distributed tracing — the third pillar — was originally placeholder-deferred as Jaeger pending a multi-service request path to make tracing meaningful. With M10 (AWS mirror) and M13 (LLM triage workflow) introducing real cross-system span chains, the deferral is closing. The choice of backend is now decision-relevant.
 
 Tempo is the correct choice over Jaeger for three reasons:
 
@@ -417,14 +417,14 @@ Tempo is the correct choice over Jaeger for three reasons:
 **Activation sequence:**
 - **M7:** Deferred line item updated from Jaeger to Tempo + OTel collector. Deployment held until cross-system spans exist.
 - **M10:** Tempo deployed on `mon01`. OTel collector running. First end-to-end trace exported from a cross-system path (Uptime Kuma probe → EC2 nginx target → response). Trace-to-log correlation with Loki verified in Grafana.
-- **M11:** A reliability drill captures an end-to-end trace as a portfolio artifact.
-- **M12:** The LLM triage workflow is instrumented end-to-end using OTel Gen-AI semantic conventions. Spans visible in Tempo with trace-to-Loki correlation.
+- **M12:** A reliability drill captures an end-to-end trace as a portfolio artifact.
+- **M13:** The LLM triage workflow is instrumented end-to-end using OTel Gen-AI semantic conventions. Spans visible in Tempo with trace-to-Loki correlation.
 
-**OTel Gen-AI semantic conventions** are still flagged experimental as of v1.36.0. Instrumentation library versions will be pinned and the stability caveat documented in the M12 instrumentation ADR.
+**OTel Gen-AI semantic conventions** are still flagged experimental as of v1.36.0. Instrumentation library versions will be pinned and the stability caveat documented in the M13 instrumentation ADR.
 
 **Rejected:**
 - **Jaeger** — viable but requires its own UI, lacks native Grafana integration, and does not share the Loki correlation surface. The Grafana-stack-native choice (Tempo) reduces operational surface for equivalent capability.
-- **Vendor SaaS APM (Datadog, Honeycomb, etc.)** — data-locality concerns mirror the M12 reasoning for local LLM inference; cost is not justified for lab scale; instrumentation lock-in is undesirable.
+- **Vendor SaaS APM (Datadog, Honeycomb, etc.)** — data-locality concerns mirror the M13 reasoning for local LLM inference; cost is not justified for lab scale; instrumentation lock-in is undesirable.
 - **No tracing layer at all** — leaves the platform at two of three observability pillars, which is below 2026 platform-engineering hiring expectations at mid/senior level.
 
 ---
@@ -456,10 +456,34 @@ A separate severity label (`cost-anomaly`) keeps these alerts distinguishable fr
 ADR-011 stays in force. The static $10/mo Budget alert remains the CI/CD precondition (pipeline cannot apply without it). Cost Anomaly Detection is additive — it covers the anomalous-spend gap that static thresholds cannot.
 
 **Drill exercise:**
-M11 includes a synthetic cost-anomaly drill — either a manually triggered SNS event or a deliberately misconfigured low-cost resource — to verify the SNS → webhook → Alertmanager path end-to-end. Without an exercised path, the integration is an unproven claim.
+M12 includes a synthetic cost-anomaly drill — either a manually triggered SNS event or a deliberately misconfigured low-cost resource — to verify the SNS → webhook → Alertmanager path end-to-end. Without an exercised path, the integration is an unproven claim.
 
 **Rejected:**
 - **Static budget thresholds only** — covers ceiling violations but not anomaly patterns; misses the failure mode this ADR addresses.
 - **Email-only Cost Anomaly notifications** — fragments the operational surface; cost would be checked in a different inbox than service alerts.
 - **CloudWatch Alarms on per-service spend** — possible but more brittle than Cost Anomaly Detection's managed baselines; fires on absolute thresholds rather than learned patterns.
 - **Third-party FinOps tooling (Vantage, CloudHealth, etc.)** — adds vendor surface and cost; out of scope for lab scale.
+
+---
+
+## ADR-026 — Vaultwarden as the sole consumer workload until a third compute node is added
+
+**Decision:** Vaultwarden is the only consumer workload deployed on `app01`. No additional consumer workloads are added until a third compute node joins the cluster with sufficient RAM and disk headroom to host them without resource contention against `util01` (DNS) or `pbs01` (backups) on `pve01`.
+
+**Reasoning:**
+The platform's hiring narrative shifts decisively when at least one workload is something the operator depends on day-to-day. Vaultwarden was selected because:
+
+- **Real availability stake** — *"Can I log into my accounts?"* is a non-synthetic SLO. Failure has consequence; the alert is not theater.
+- **Resource-light** — ~512 MB RAM, single SQLite DB. Fits on `app01` without disturbing the existing pve01 footprint (`util01`, `pbs01`, `win01`).
+- **Real signal class** — auth attempts and failed logins produce meaningful security telemetry for Loki rules, not placeholder plumbing logs.
+- **Meaningful PBS customer** — the backup chain (PBS → nas01 → Backblaze B2) gains a customer whose backups *must* work. A failed restore of the password vault has stakes that strengthen the restore-drill story.
+- **Clean trigger for ADR-019 TLS work** — Vaultwarden's browser extensions and mobile clients require trusted TLS, which forces the local-CA implementation that was deferred earlier in the plan.
+
+**Why a single workload:**
+`pve01` already carries `util01`, `pbs01`, and `win01`. Adding more stateful workloads on `app01` risks resource contention with `util01`, which carries DNS for the entire network — a cluster-wide failure surface that consumer apps must not be allowed to contend with. One workload with a complete operational lifecycle (SLO, runbook, alert rules, restore drill, postmortem) is also a stronger portfolio signal than several workloads with shallow coverage of each.
+
+**Trigger to revisit:**
+A third compute node added to the cluster — providing dedicated headroom for app workloads without disturbing the platform layer on `pve01`/`pve02`. Until that node exists, the answer to *"can we add another consumer workload?"* is no.
+
+**Sequencing:**
+Vaultwarden is delivered as M11, after AWS mirror (M10) and before reliability drills (M12) so the drill rotation can include a Vaultwarden-down scenario with real consequence. The capstone (M13) treats Vaultwarden as a triage target alongside platform alerts.

@@ -860,7 +860,7 @@
         <div class="item-list">
           <div class="item-card">
             <h3>pve01 &middot; primary compute</h3>
-            <p>Hosts utility, backup, and personal-app workload boundaries. Keeps the backup system close to warm storage and leaves the automation host on the opposite node.</p>
+            <p>Hosts utility, backup, and consumer-workload boundaries (<code>app01</code> runs Vaultwarden as the sole consumer until a third compute node is added). Keeps the backup system close to warm storage and leaves the automation host on the opposite node.</p>
             <div class="item-meta">
               <span class="chip">util01</span>
               <span class="chip">pbs01</span>
@@ -970,7 +970,7 @@
       <div class="service-card reveal" style="--d:8">
         <h3>LLM inference capstone</h3>
         <p>Local inference added as an AIOps-adjacent capstone, giving the lab an alert-triage service that extends the platform beyond core infrastructure and into operator-assistance workflows.</p>
-        <span class="status planned">Planned &middot; M12</span>
+        <span class="status planned">Planned &middot; M13</span>
       </div>
     </div>
   </section>
@@ -1024,8 +1024,9 @@
       <div class="group-label">Cloud &amp; Capstone</div>
       <div class="ms-list">
         <div class="ms-row planned" style="--d:0"><div class="ms-id">M10</div><div class="ms-title">AWS Infrastructure Mirror</div><div class="ms-badge">Planned</div></div>
-        <div class="ms-row planned" style="--d:1"><div class="ms-id">M11</div><div class="ms-title">Reliability Drills and Platform Documentation</div><div class="ms-badge">Planned</div></div>
-        <div class="ms-row planned" style="--d:2"><div class="ms-id">M12</div><div class="ms-title">AI Capstone: LLM Inference as a Managed Service</div><div class="ms-badge">Planned</div></div>
+        <div class="ms-row planned" style="--d:1"><div class="ms-id">M11</div><div class="ms-title">Consumer Workload &mdash; Vaultwarden on app01</div><div class="ms-badge">Planned</div></div>
+        <div class="ms-row planned" style="--d:2"><div class="ms-id">M12</div><div class="ms-title">Reliability Drills and Platform Documentation</div><div class="ms-badge">Planned</div></div>
+        <div class="ms-row planned" style="--d:3"><div class="ms-id">M13</div><div class="ms-title">AI Capstone: LLM Inference as a Managed Service</div><div class="ms-badge">Planned</div></div>
       </div>
     </div>
   </section>

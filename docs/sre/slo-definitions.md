@@ -6,7 +6,7 @@ Service Level Objectives for the `platform-lab` platform.
 >
 > **Window:** 30-day rolling window throughout.
 > **Authored:** Milestone 7 (Monitoring Layer)
-> **Reviewed:** Milestone 11 (Reliability Drills)
+> **Reviewed:** Milestone 12 (Reliability Drills)
 
 ---
 
@@ -423,4 +423,5 @@ These feed the burn rate alerts and can be referenced in Grafana instead of re-r
 - ADR-015 — 30-day rolling window
 - Milestone 2 — Backup Architecture (PBS deployed — SLI-4 monitoring begins at M7)
 - Milestone 7 — Monitoring Layer (deployment of Prometheus, Grafana, Alertmanager; all four SLOs active)
-- Milestone 11 — Reliability Drills (error budget reviewed post-drill for each SLO)
+- Milestone 11 — Vaultwarden consumer workload (introduces SLI-5 — see ADR-026)
+- Milestone 12 — Reliability Drills (error budget reviewed post-drill for each SLO)
