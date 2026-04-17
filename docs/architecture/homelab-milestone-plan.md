@@ -215,18 +215,17 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Ansible installed and functional on Automation VM | ✅ | Debian apt · ansible 10 / ansible-core 2.17 + `arensb.truenas` and `community.proxmox` collections · 2026-04-14 |
 | Automation VM added to Ansible homelab inventory | ✅ | 2026-04-15 |
 | Automation VM reachable via `ansible auto01 -m ping` | ✅ | From Fedora workstation (pre-M4 execution host) · 2026-04-15 |
-| Ansible Vault file created and encrypted | 🔲 | |
 | Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
 | Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M12 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
 | Baseline host security configured on EliteDesk | 🔲 | |
 | EliteDesk added to Ansible homelab inventory | 🔲 | |
 | EliteDesk reachable via `ansible qdev01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
 | Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified — depends on Debian install above |
-| PBS backup job added for auto01 | 🔲 | |
-| Restore test verified — RTO measured | 🔲 | Moved from M2 — auto01 is the first platform VM with a standard PBS backup job; use it to validate the restore chain and measure RTO |
-| `docs/operations/backup-restore.md` reflects actual state | 🔄 | Moved from M2 — finalize schedules, restore validation, and measured RTO/RPO after restore test above |
+| PBS backup job added for auto01 | ✅ | Configured in Proxmox UI · 2026-04-16 |
+| Restore test verified — RTO measured | ✅ | auto01 restored to test VMID on pve02 · ~10s image restore (33 GB) · VM boot + SSH validated · 2026-04-16 |
+| `docs/operations/backup-restore.md` reflects actual state | ✅ | Verified against live build · restore validated · RTO measured · 2026-04-16 |
 | `docs/operations/auto01-setup.md` reflects actual build | ✅ | Fully validated against live build · 2026-04-15 |
-| `docs/operations/utility-node.md` scaffolded | 🔲 | Full content added after M4 when Utility VM exists |
+| `docs/operations/util01-setup.md` scaffolded | ✅ | Stub from vm-setup-template.md · 2026-04-16 · full content added after M4 when Utility VM exists |
 
 ---
 
@@ -362,10 +361,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `ansible/playbooks/proxmox-host.yml` written and tested | 🔲 | OS-level hygiene for pve01/pve02 — no `ops` user, no ufw, no unattended-upgrades |
 | All playbooks idempotent (second run = no changes) | 🔲 | |
 | Playbooks run correctly on Utility VM, EliteDesk, and Automation VM | 🔲 | |
+| Ansible Vault file created and encrypted | 🔲 | Moved from M3 |
 | Secrets encrypted with Ansible Vault | 🔲 | |
 | Vault vars under `group_vars/` or inventory-specific vars | 🔲 | |
 | Same roles confirmed reusable across bare metal, Proxmox VM, EC2 | 🔲 | |
 | `make ansible-baseline` functional | 🔲 | |
+| PBS backup jobs codified in Ansible | 🔲 | Replace UI-configured backup jobs with an Ansible-managed definition; backup-jobs-as-code |
 | `ansible/README.md` reflects actual playbook behavior | 🔄 | Doc written; not yet verified against live runs |
 
 ---

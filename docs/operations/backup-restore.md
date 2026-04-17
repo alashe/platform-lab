@@ -1,8 +1,6 @@
 # Backup & Restore
 
-> **Status: Written ahead of build (Milestone 2).** `pbs01` has been provisioned and the PBS datastore path is in place. The remaining live-build work is backup-job configuration plus end-to-end validation. Verify schedules, restore paths, and RTO/RPO targets against live infrastructure when Milestone 2 is complete and remove this notice.
->
-> **Review note:** Re-review this document after Milestone 2 completion. Planned commands or playbooks should either exist in-repo by then or be replaced with the implemented procedure.
+> **Status: Verified against live build.** Backup jobs configured, restore validated (auto01, ~10s for 33 GB, 2026-04-16), RTO well under 30-minute target. Update as needed when new VMs are added in later milestones.
 
 Backup architecture, schedules, verification, and restore procedures.
 
@@ -26,10 +24,11 @@ Backblaze B2  (offsite cold)
 
 ## Recovery Targets
 
-| Metric | Target | Last Verified |
-|---|---|---|
-| RTO — full VM restore from PBS | < 30 minutes | Populate after first successful restore drill (Milestone 2) |
-| RPO — maximum data loss | 24 hours | Populate after daily backup schedule is confirmed running (Milestone 2) |
+| Metric | Target | Applies To | Last Verified |
+|---|---|---|---|
+| RTO — full VM restore from PBS | < 30 minutes | All VMs | ~10s for 33 GB image restore (auto01, 2026-04-16) |
+| RPO — daily backups | 24 hours | util01, mon01, win01 | Daily backup jobs configured · 2026-04-16 |
+| RPO — weekly backups | 7 days | auto01, pbs01 | Weekly backup jobs configured · 2026-04-16 |
 
 ---
 
@@ -44,6 +43,8 @@ Backblaze B2  (offsite cold)
 | NAS → Backblaze B2 (cold) | NAS | Backblaze B2 | Weekly | 90 days |
 | Terraform state | S3 backend | Versioned automatically | On every apply | S3 versioning |
 | Ansible / Terraform code | Git | Remote repository | On every push | Full history |
+
+All Proxmox backup jobs use the note template `{{guestname}} - {{node}}` so each backup is labeled with the VM name and the node it ran on.
 
 ---
 
@@ -67,10 +68,12 @@ Backblaze B2  (offsite cold)
 
 ### Restore a VM from PBS
 
-1. Log into Proxmox web UI
-2. Navigate to **PBS** storage → **Backups**
-3. Select the VM backup to restore
-4. Click **Restore** — choose target node and storage
+All restores are performed in the **Proxmox VE** web UI — not the PBS web UI.
+
+1. In Proxmox VE, expand the **pbs-tank** storage entry in the left sidebar
+2. Select **Backups**
+3. Select the backup snapshot to restore
+4. Click **Restore** — choose target node and target storage
 5. Start the restored VM
 6. Verify services are running:
 
@@ -83,11 +86,10 @@ systemctl status docker
 7. If restoring `util01`, verify Pi-hole is responding:
 
 ```bash
-# From another host on the network
 dig @<utility-vm-ip> google.com
 ```
 
-8. Log actual restore time in the table above.
+8. Log actual restore time in the Recovery Targets table above.
 
 ---
 
@@ -163,13 +165,12 @@ This is a rare scenario. Document steps if it ever occurs.
 Pick one VM. Restore it to a test VMID on the same Proxmox host.  
 Start it, verify services, log the actual RTO. Delete the test VM.
 
-For PBS-backed VMs, use the Proxmox web UI restore flow:
+For PBS-backed VMs, restore through the **Proxmox VE** web UI:
 
-1. Proxmox UI → PBS storage → Backups
-2. Select the backup
-3. Click **Restore**
-4. Choose the test VMID, target node, and target storage
-5. Start the restored VM and validate services
+1. Expand **pbs-tank** storage in the left sidebar → **Backups**
+2. Select the backup snapshot
+3. Click **Restore** — use a test VMID, choose target node and target storage
+4. Start the restored VM and validate services
 
 ### Backup job health
 
