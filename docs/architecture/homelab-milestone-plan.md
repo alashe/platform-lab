@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-15
-> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (in progress) · M2 complete · restore test deferred to M3 (first platform VM)
+> **Last updated:** 2026-04-16
+> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (11/17 complete) · Automation VM done · EliteDesk remaining (Debian install, WoL, security baseline, inventory, QDevice)
 ---
 
 ## Status Key
