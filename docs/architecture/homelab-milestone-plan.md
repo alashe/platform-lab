@@ -3,8 +3,8 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-16
-> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (11/17 complete) · Automation VM done · EliteDesk remaining (Debian install, WoL, security baseline, inventory, QDevice)
+> **Last updated:** 2026-04-18
+> **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (17/17 complete · 2026-04-18)
 ---
 
 ## Status Key
@@ -215,12 +215,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Ansible installed and functional on Automation VM | ✅ | Debian apt · ansible 10 / ansible-core 2.17 + `arensb.truenas` and `community.proxmox` collections · 2026-04-14 |
 | Automation VM added to Ansible homelab inventory | ✅ | 2026-04-15 |
 | Automation VM reachable via `ansible auto01 -m ping` | ✅ | From Fedora workstation (pre-M4 execution host) · 2026-04-15 |
-| Debian 13 installed on HP EliteDesk | 🔲 | Bare metal — manual install |
-| Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | 🔲 | BIOS "Resume/Wake on LAN" on during install; verify `ethtool <iface>` shows `Supports Wake-on: g` and persist `wol g`. Enables M12 power-cycling drill — capture cost is minutes, deferred cost is a reboot |
-| Baseline host security configured on EliteDesk | 🔲 | |
-| EliteDesk added to Ansible homelab inventory | 🔲 | |
-| EliteDesk reachable via `ansible qdev01 -m ping` | 🔲 | From Fedora workstation (pre-M4 execution host) |
-| Corosync QDevice configured on HP EliteDesk | 🔲 | `corosync-qnetd` installed; cluster quorum verified — depends on Debian install above |
+| Debian 13 installed on HP EliteDesk | ✅ | Bare metal — manual install via Ventoy USB · 2026-04-18 |
+| Wake-on-LAN enabled on EliteDesk (BIOS + NIC) | ✅ | BIOS "Resume/Wake on LAN" enabled during install; `ethtool eno1` shows `Supports Wake-on: pumbg` and `Wake-on: g`; persisted via `ethernet-wol g` in `/etc/network/interfaces` (ifupdown's ethtool if-up hook) · 2026-04-18 |
+| Baseline host security configured on EliteDesk | ✅ | SSH hardening via drop-in at `/etc/ssh/sshd_config.d/10-platform-lab-baseline.conf` per [workflows/ssh-hardening-dropin.md](../operations/workflows/ssh-hardening-dropin.md); packages (ufw, fail2ban, unattended-upgrades) and log rotation applied via the Ansible `baseline` role at M4 · 2026-04-18 |
+| EliteDesk added to Ansible homelab inventory | ✅ | 2026-04-18 |
+| EliteDesk reachable via `ansible qdev01 -m ping` | ✅ | From Fedora workstation (pre-M4 execution host) · 2026-04-18 |
+| Corosync QDevice configured on HP EliteDesk | ✅ | `corosync-qnetd` on qdev01, `corosync-qdevice` client on pve01 + pve02, registered via `pvecm qdevice setup 192.168.0.53`; `pvecm status` reports `Expected votes: 3` + `Flags: Quorate Qdevice` · 2026-04-18 |
 | PBS backup job added for auto01 | ✅ | Configured in Proxmox UI · 2026-04-16 |
 | Restore test verified — RTO measured | ✅ | auto01 restored to test VMID on pve02 · ~10s image restore (33 GB) · VM boot + SSH validated · 2026-04-16 |
 | `docs/operations/backup-restore.md` reflects actual state | ✅ | Verified against live build · restore validated · RTO measured · 2026-04-16 |
@@ -239,16 +239,22 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Terraform provider and version constraints defined | 🔲 | |
 | `terraform/environments/homelab/` scaffolded | 🔲 | |
 | `terraform/modules/proxmox_vm/` written | 🔲 | |
+| `ansible/roles/baseline/` written and idempotent | 🔲 | Covers SSH drop-in, `ufw`, `fail2ban`, `unattended-upgrades`, log rotation, declarative authorized keys. Moved forward from M9 so every Terraform-provisioned VM lands pre-hardened |
+| Log rotation policy enforced by `baseline` role | 🔲 | `/etc/logrotate.d/homelab-defaults` — size caps + retention on `/var/log`; prevents disk-fill independent of central shipping |
+| `ansible/playbooks/baseline.yml` written | 🔲 | Thin wrapper that applies the `baseline` role to the Ansible `[debian_hosts]` group |
+| `baseline.yml` applied to Automation VM — idempotent upgrade from manual drop-in | 🔲 | Second run must report zero changes. Validates the role matches what was hand-applied at M3 |
+| `baseline.yml` applied to EliteDesk — bare-metal role portability proof | 🔲 | Same role, bare metal instead of VM. First portability check |
 | Utility VM provisioned via `terraform apply` | 🔲 | First Terraform-managed VM in the environment |
 | Utility VM added to Ansible homelab inventory | 🔲 | |
 | Utility VM reachable via `ansible util01 -m ping` | 🔲 | Pre-rotation from Fedora workstation, post-rotation from `auto01` |
-| Baseline host security configured on Utility VM | 🔲 | Via Ansible |
+| `baseline.yml` applied to Utility VM | 🔲 | First VM hardened by the role at creation time rather than retroactively |
 | Docker CE + Compose installed on Utility VM | 🔲 | Via Ansible |
 | Docker CE + Compose installed on EliteDesk | 🔲 | Via Ansible — same role as Utility VM |
 | Docker services persist through reboot on both | 🔲 | |
 | `terraform fmt`, `validate`, `plan`, `apply`, `destroy` workflow documented | 🔲 | |
 | `docs/setup/terraform-prereqs.md` written | 🔲 | |
 | `docs/operations/utility-node.md` completed | 🔲 | |
+| `make ansible-baseline` functional | 🔲 | Make target runs `baseline.yml` against the `[debian_hosts]` group |
 | PBS backup job added for util01 | 🔲 | |
 | `pbs01` imported into Terraform state | 🔲 | `terraform import proxmox_vm_qemu.pbs01 <vmid>` — brings the manually-provisioned PBS VM under Terraform management; verify with `terraform plan` (should show no changes) |
 | SSH key rotation — replace `fedora_ed25519` with `auto01` key | 🔲 | Three surfaces to update: (1) Terraform provider config (`environments/homelab/main.tf`) and Ansible inventory (`hosts.ini`); (2) Debian 13 VM template cloud-init key (`qm set 9000 --sshkeys ~/.ssh/auto01_ed25519.pub`); (3) all VMs provisioned before rotation — deploy new key via Ansible baseline and verify `fedora_ed25519` is removed from `authorized_keys` on each host |
@@ -269,7 +275,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Manual approval gate before apply | 🔲 | |
 | `terraform apply` executes through CI after approval | 🔲 | |
 | Ansible syntax check runs on PR | 🔲 | No live hosts required |
-| Placeholder playbook scaffolded so CI has a target | 🔲 | Replaced by real playbooks at Milestone 9 |
+| Placeholder playbook scaffolded so CI has a target | 🔲 | Replaced by `baseline.yml` at Milestone 4 and service playbooks at Milestone 9 |
 | Pipeline documented in `terraform/README.md` | 🔲 | |
 | AWS cost estimate documented before first apply | 🔲 | See ADR-011 · baseline estimate for EC2, S3 |
 | AWS Budget alert configured | 🔲 | Alert at $10/mo — before pipeline can trigger `terraform apply`. Cost Anomaly Detection added at M10 once real spend exists — see ADR-025 |
@@ -304,6 +310,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 |---|---|---|
 | Monitoring VM provisioned on pve02 — disk on `nfs-shared` pool | 🔲 | Disk on shared NFS pool enables live migration (ADR-023) |
 | Monitoring VM reachable via `ansible mon01 -m ping` | 🔲 | From `auto01` (execution host post-M4) |
+| `baseline.yml` applied to Monitoring VM | 🔲 | Same role used in M4 · applied at creation so mon01 lands pre-hardened |
 | Prometheus running, scraping all hosts | 🔲 | Utility VM · EliteDesk · Automation VM |
 | node_exporter on all managed hosts | 🔲 | |
 | cAdvisor on Utility VM and EliteDesk | 🔲 | |
@@ -349,23 +356,20 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 ## Milestone 9 — Ansible Automation with Vault
 
-**Objective:** Implement configuration management and cross-target service deployment using Ansible. CI syntax check from Milestone 5 validates every playbook on push.
+**Objective:** Expand the Ansible surface beyond `baseline`. Service playbooks, Vault secrets, and cross-target role reuse land here. The `baseline` role itself was written at Milestone 4 so Terraform-provisioned VMs land pre-hardened; this milestone builds on top of it. CI syntax check from Milestone 5 validates every playbook on push.
 
 | Item | Status | Notes |
 |---|---|---|
-| `ansible/playbooks/baseline.yml` written and tested | 🔲 | |
-| Log rotation policy enforced by baseline role | 🔲 | `/etc/logrotate.d/homelab-defaults` — size caps + retention on `/var/log`; prevents disk-fill independent of central shipping |
 | `ansible/playbooks/docker.yml` written and tested | 🔲 | |
 | `ansible/playbooks/monitoring-target.yml` written and tested | 🔲 | |
 | `ansible/playbooks/utility-node.yml` written and tested | 🔲 | |
 | `ansible/playbooks/proxmox-host.yml` written and tested | 🔲 | OS-level hygiene for pve01/pve02 — no `ops` user, no ufw, no unattended-upgrades |
-| All playbooks idempotent (second run = no changes) | 🔲 | |
-| Playbooks run correctly on Utility VM, EliteDesk, and Automation VM | 🔲 | |
+| All playbooks idempotent (second run = no changes) | 🔲 | Covers docker, monitoring-target, utility-node, proxmox-host. `baseline.yml` idempotency proven at M4 |
+| Service playbooks run correctly on Utility VM, EliteDesk, and Automation VM | 🔲 | Role-reuse across VM + bare metal (baseline portability already proven at M4) |
 | Ansible Vault file created and encrypted | 🔲 | Moved from M3 |
 | Secrets encrypted with Ansible Vault | 🔲 | |
 | Vault vars under `group_vars/` or inventory-specific vars | 🔲 | |
 | Same roles confirmed reusable across bare metal, Proxmox VM, EC2 | 🔲 | |
-| `make ansible-baseline` functional | 🔲 | |
 | PBS backup jobs codified in Ansible | 🔲 | Replace UI-configured backup jobs with an Ansible-managed definition; backup-jobs-as-code |
 | `ansible/README.md` reflects actual playbook behavior | 🔄 | Doc written; not yet verified against live runs |
 
