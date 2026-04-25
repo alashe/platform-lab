@@ -3,7 +3,7 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-18
+> **Last updated:** 2026-04-23
 > **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (17/17 complete · 2026-04-18)
 ---
 
@@ -66,12 +66,18 @@ make validate
 | 11 | Consumer Workload: Vaultwarden on app01 | 4, 7, 9 |
 | 12 | Reliability Drills and Platform Documentation | 10, 11 |
 | 13 | AI Capstone: LLM Inference as a Managed Platform Service | 5, 7, 12 |
+| 14 | Consumer Workload: Open Brain — AI Memory Layer (Tentative) | 11, 13 · third compute node |
+| 15 | Network Segmentation (VLANs + Gateway Firewall) (Tentative) | 13 · managed switch + gateway hardware/ADR |
 
 > **Why CI/CD is Milestone 5:** The pipeline is built as soon as Terraform is proven locally, so every subsequent change is delivered through it.
 >
 > **Why the Ansible syntax check is included at Milestone 5:** `ansible-playbook --syntax-check` requires no live hosts. Adding the workflow early creates a feedback loop for every playbook written during Milestone 9.
 >
 > **Pi-hole sequencing:** Pi-hole is deployed to the Utility VM at Milestone 6 (limited rollout). The EliteDesk Pi-hole instance is deployed by the same Ansible role but is not activated as a DNS server until Milestone 8 (whole-home cutover), when the router is configured with both IPs.
+>
+> **Why Milestone 14 is tentative:** A second consumer workload on top of the Vaultwarden pattern. Gated on the third compute node condition from ADR-026 and a go/no-go review after Milestone 13. If skipped, move to Deferred with rationale.
+>
+> **Why Milestone 15 is tentative:** Non-trivial migration from flat LAN to segmented network. Blocked on hardware purchase (VLAN-capable managed switch) and gateway ADR (OPNsense VM vs. dedicated appliance). If M14 and M15 are both pursued, M15 is recommended to run *first* so OB1 deploys into a proper `services` VLAN from day one. Final ordering decided at promotion time.
 
 ---
 
@@ -322,6 +328,9 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Uptime Kuma running on Monitoring VM | 🔲 | |
 | Uptime Kuma monitors configured | 🔲 | nginx + Pi-hole on Utility VM and EliteDesk · Grafana · external DNS |
 | Uptime Kuma EC2 monitor defined but inactive | 🔲 | Activated at Milestone 10 |
+| CRC public endpoints monitored — `alashe.dev/`, `alashe.dev/lab`, `alashe.dev/api/visits` | 🔲 | CRC ships before M4, so live by M7. HTTPS up + response time on frontend, showcase, and API path — `/api/visits` synthetic exercises the full CF → API GW → Lambda → DynamoDB stack |
+| CRC TLS cert expiry monitor on `alashe.dev` | 🔲 | ACM auto-renews; alert is cheap insurance against a renewal failure surfacing through CloudFront |
+| CRC keyword check on `/` and `/lab` | 🔲 | Catches CloudFront 200 with broken/empty body — content assertion, not just status code |
 | Uptime Kuma config exported as JSON to repo | 🔲 | |
 | Grafana dashboards exported as JSON to repo | 🔲 | |
 | Monitoring VM included in PBS backup schedule | 🔲 | |
@@ -499,6 +508,85 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | ADR: local inference vs. external API | 🔲 | Rationale: cost · data locality · operational control · learning value |
 | ADR: OTel instrumentation approach for LLM workflow | 🔲 | OpenAI-SDK-via-compat-endpoint vs. manual spans; Gen-AI semconv version pinning; data-locality stance on message-capture attributes |
 | 2027 Kubernetes evolution path documented in portfolio doc | 🔲 | Ollama on k3s + ArgoCD — note intended direction without over-engineering now |
+
+---
+
+## Milestone 14 — Consumer Workload: Open Brain / AI Memory Layer (Tentative)
+
+**Objective:** Operate Open Brain (OB1) as a second self-hosted consumer workload — a persistent AI memory layer exposed via MCP. Demonstrates the platform's ability to onboard heterogeneous app classes beyond password management, and exercises `pgvector`, Row-Level Security, and embedding-ingest pipelines on top of existing platform primitives.
+
+> **Tentative.** Blocked on:
+> - Third compute node (ADR-026 — second consumer workload condition)
+> - Go/no-go review after Milestone 13
+> - If skipped, move entry to Deferred with rationale
+>
+> **Scope framing:** The milestone is about *operating the workload as a platform service*, not about OB1 features. Portfolio value lives in the infra wrap (Terraform, Ansible, SLO, backup, restore, runbook, ADRs) — not the app.
+>
+> **Upstream:** `https://github.com/NateBJones-Projects/OB1` — FSL-1.1-MIT (source-available, converts to MIT after 2 years).
+
+| Item | Status | Notes |
+|---|---|---|
+| Third compute node available | 🔲 | Hard prerequisite per ADR-026 |
+| ADR: self-hosted Supabase full stack vs. minimal `pgvector` + app stack | 🔲 | Scope-defining decision — write before provisioning |
+| ADR: OB1 as second consumer workload | 🔲 | Updates or supersedes the ADR-026 condition |
+| ADR: license posture (FSL-1.1-MIT) for homelab use | 🔲 | Flag redistribution implications even though personal use is unaffected |
+| Target VM provisioned via Terraform | 🔲 | Uses `proxmox_vm` module; hostname and IP assigned per `naming-convention.md` |
+| Target VM reachable via `ansible <host> -m ping` | 🔲 | From `auto01` |
+| Baseline + Docker roles applied | 🔲 | Reuses existing Ansible roles |
+| Postgres + `pgvector` installed and verified | 🔲 | Ansible role; extension created in target DB |
+| Row-Level Security policies authored and tested | 🔲 | Policy tests committed — RLS is load-bearing, not optional |
+| MCP server deployed and reachable on internal DNS | 🔲 | Internal-CA TLS per ADR-019 (established at M11) |
+| Pi-hole local DNS record added | 🔲 | Both Pi-hole instances |
+| `pg_exporter` scraped by Prometheus | 🔲 | Query latency, connection count, index health |
+| node_exporter + cAdvisor scraped on the VM | 🔲 | Reuses existing Prometheus scrape configs |
+| Logs shipped to Loki via Promtail | 🔲 | Postgres logs + app logs |
+| Grafana dashboard: query latency · ingest rate · embedding throughput · error rate | 🔲 | Reuses existing dashboard patterns |
+| Uptime Kuma HTTP check on MCP endpoint | 🔲 | |
+| SLO defined: availability + p95 query latency | 🔲 | Added to `docs/sre/slo-definitions.md` with SLI, error budget, burn-rate alerts |
+| PBS backup job for the VM (daily) | 🔲 | |
+| Postgres logical backup (`pg_dump`) to NAS | 🔲 | Belt-and-suspenders against VM-only restore gaps |
+| Restore drill — VM-level and DB-level both performed | 🔲 | RTO/RPO recorded; DB restore re-verifies `pgvector` extension intact |
+| Obsidian vault import recipe exercised | 🔲 | Validates ingest path with real data from the `ala-para` vault |
+| `docs/operations/open-brain-runbook.md` written | 🔲 | Start/stop · backup/restore · re-embedding · incident response |
+| Relevant M12 drill scenarios re-run against the workload | 🔲 | Service-down, restore, observability — same pattern as the Vaultwarden drill |
+
+---
+
+## Milestone 15 — Network Segmentation: VLANs + Gateway Firewall (Tentative)
+
+**Objective:** Replace the flat LAN with a segmented L2/L3 network. Introduce a managed switch, VLAN-aware Proxmox bridges, a gateway firewall (OPNsense or equivalent), and per-segment inter-VLAN ACLs. Demonstrates network design, east-west firewalling, and maps homelab topology to the VPC / NACL / Security Group concepts exercised on the AWS SAA exam.
+
+> **Tentative.** Blocked on:
+> - Managed switch purchase (VLAN-capable, 2.5GbE to match existing uplink)
+> - Gateway decision — OPNsense VM on cluster vs. dedicated appliance (ADR)
+> - Go/no-go review after Milestone 13
+> - If both M14 and M15 are pursued, sequence M15 *first* so OB1 lands in the `services` VLAN from day one
+>
+> **Scope framing:** Non-trivial migration of an already-operating platform. Must not disrupt Corosync, NFS (NAS → Proxmox, PBS → NAS), PBS backups, or any consumer workload. The cutover plan and rollback plan are load-bearing artifacts, not afterthoughts.
+
+| Item | Status | Notes |
+|---|---|---|
+| Managed switch acquired and installed | 🔲 | 2.5GbE uplink to match GigaPlus; 8+ ports |
+| ADR: gateway — OPNsense VM vs. dedicated appliance | 🔲 | VM option concentrates failure in cluster; appliance adds hardware + rack space |
+| ADR: VLAN ID scheme + per-segment subnet plan | 🔲 | Segments: `mgmt`, `services`, `iot`, `trusted`, `guest` (finalize in ADR) |
+| ADR: migration strategy — flat LAN → segmented | 🔲 | Includes rollback plan; must preserve Corosync/NFS/PBS paths |
+| Gateway firewall deployed and reachable | 🔲 | DHCP, DNS forwarding, inter-VLAN routing |
+| Switch port VLAN assignments captured in repo | 🔲 | Exported switch config or versioned YAML/JSON source of truth |
+| Proxmox bridges configured VLAN-aware | 🔲 | `bridge-vlan-aware yes` on `vmbr0` on both pve nodes |
+| Corosync ring path verified on `mgmt` VLAN | 🔲 | Latency check against flat-LAN baseline; no quorum flaps |
+| NFS paths verified (NAS ↔ Proxmox, PBS ↔ NAS) | 🔲 | No drops during or after cutover; throughput unchanged |
+| DHCP scopes per segment configured | 🔲 | On gateway firewall or Pi-hole depending on ADR outcome |
+| Pi-hole DNS reachable from all required segments | 🔲 | Split-horizon vs. single resolver decided in ADR |
+| Inter-VLAN firewall rules authored as code | 🔲 | Default-deny between segments; explicit allows only |
+| `mgmt` access restricted to `trusted` VLAN only | 🔲 | Admin planes (Proxmox, PBS, NAS, gateway) not reachable from IoT/guest |
+| Existing VMs migrated to correct segments | 🔲 | Without extended downtime; document actual outage windows |
+| Gateway metrics scraped by Prometheus | 🔲 | Firewall rule hits, flow counts, WAN throughput, gateway uptime |
+| Grafana dashboard: segment traffic · rule hits · gateway availability | 🔲 | |
+| Alertmanager rule: gateway unreachable | 🔲 | High-priority — gateway outage = inter-VLAN outage |
+| Uptime Kuma HTTP check on gateway admin UI | 🔲 | |
+| `docs/operations/network-segmentation-runbook.md` written | 🔲 | Cutover · rollback · failover · VLAN add/remove procedure |
+| `docs/architecture/network-topology.md` updated | 🔲 | New L2/L3 diagram showing VLANs, subnets, gateway, trust boundaries |
+| Reliability drill: gateway down | 🔲 | Verify inter-VLAN loss behavior and recovery procedure; MTTR recorded |
 
 ---
 
