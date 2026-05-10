@@ -6,6 +6,8 @@ This baseline is implemented by the Ansible `baseline` role. Re-running `baselin
 
 User accounts and SSH key management are in [access-control.md](access-control.md). This document covers daemon config, firewall, and package requirements.
 
+> **Compliance mapping (planned · ADR-027):** Each setting in this document will be annotated with its corresponding CIS Debian 12/13 Benchmark control ID (e.g., 5.2.x for SSH hardening). Annotations are documentation-only — no role-logic changes — and produce the OS-layer evidence rows in the cross-repo compliance control map at `docs/compliance/control-map.md`. Tracked as M0 retroactive amendment in [`homelab-milestone-plan.md`](homelab-milestone-plan.md).
+
 ---
 
 ## SSH Daemon Configuration

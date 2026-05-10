@@ -3,7 +3,7 @@
 Authoritative milestone plan for the `platform-lab` project.  
 Status reflects reality only — aspirational items are marked 🔲, not ✅.
 
-> **Last updated:** 2026-04-23
+> **Last updated:** 2026-05-08
 > **Current phase:** Milestone 3 — Bootstrap: Automation VM + EliteDesk (17/17 complete · 2026-04-18)
 ---
 
@@ -31,6 +31,23 @@ These rules do not change unless explicitly revised and documented in [`decision
 - **Ansible execution** runs from the Automation VM — the Fedora workstation is for development only
 - CI/CD is a single infrastructure delivery pipeline for Terraform-managed environments
 - Operational commands are standardized through the root `Makefile`
+
+---
+
+## Cross-cutting Threads
+
+Some work runs across milestones rather than landing in a single block. Threads are tracked here so scattered line items remain legible as a coherent story.
+
+### Compliance Posture (added 2026-05-08 · ADR-027)
+
+Maps existing and planned platform controls to SOC 2 Trust Services Criteria, HIPAA Security Rule (§164.308 / .312 / .314), and HITRUST CSF cross-references. Implementation surfaces:
+
+- **OS layer** — `baseline` role hardening annotated with CIS Debian 12/13 Benchmark IDs (M0 retroactive amendment)
+- **AWS layer** — CloudTrail, AWS Config + HIPAA conformance pack, IAM Access Analyzer, KMS defaults, `default_tags` for compliance scoping (M10 scope additions). The CRC repo (`cloud-resume`) carries the equivalent controls for the serverless stack — see `cloud-resume/docs/SECURITY.md`
+- **CI/CD** — drift detection on schedule; policy gate (`tflint` / `checkov`) on PRs; required-tag enforcement (M5 scope additions)
+- **Operational** — compliance audit drill scenario; cross-repo control-map artifact at `docs/compliance/control-map.md`; threat model at `docs/compliance/threat-model.md` (M12 deliverables)
+
+Companion vault notes: `1 Projects/CloudOps/compliance-posture.md` (thread tracker) · `1 Projects/Engineering Portfolio/case-structure.md` (evidence row).
 
 ---
 
@@ -127,6 +144,7 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Public GitHub repo created | ✅ | `alashe/platform-lab` |
 | `.github/workflows/sync-public.yml` written | ✅ | Workflow active — triggers on push to main |
 | `.github/sync-manifest.txt` initialized | ✅ | Milestone 0 docs + showcase page listed; code files added as built |
+| `hardening-baseline.md` annotated with CIS Debian 12/13 Benchmark IDs (retroactive amendment) | 🔲 | Per ADR-027 — annotate existing rows (SSH daemon, packages, ufw, fail2ban, unattended-upgrades, log rotation) with corresponding CIS control IDs. Documentation-only — no role-logic change. Added 2026-05-08 |
 
 ---
 
@@ -288,6 +306,9 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | `PUBLIC_REPO_PAT` secret configured in private repo | 🔲 | PAT with `repo` scope on the public repo |
 | `PUBLIC_REPO` variable configured in private repo | 🔲 | Set to `<username>/<public-repo-name>` |
 | Sync workflow tested — Milestone 0 docs appear in public repo | 🔲 | First live run of `sync-public.yml` |
+| Scheduled drift-detection `terraform plan` workflow | 🔲 | Per ADR-027 — daily plan against `aws-dev` (and `homelab` once apply path exists); non-zero diff fires alert. Compliance audit signal for unauthorized change. Added 2026-05-08 |
+| Policy gate on PR — `tflint` or `checkov` | 🔲 | Per ADR-027 — fail PR on policy violations: S3 public-access, unencrypted resources, missing required tags. Tooling choice deferred to implementation time. Added 2026-05-08 |
+| Required-tag enforcement | 🔲 | Per ADR-027 — `owner`, `env`, `data-classification`, `compliance-scope` enforced via `default_tags` provider block + checkov rule. Added 2026-05-08 |
 
 ---
 
@@ -416,6 +437,12 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Alertmanager routing rule for `severity: cost-anomaly` | 🔲 | Treats cost spikes as a first-class operational signal alongside service-down alerts |
 | Tempo + OpenTelemetry collector deployed on mon01 | 🔲 | Activates the M7 deferred entry — first cross-system spans now exist (homelab → AWS request paths) |
 | OTel instrumentation on EC2 nginx target | 🔲 | First end-to-end traced workflow: Uptime Kuma probe → EC2 nginx → response. Spans exported to Tempo; trace-to-log correlation with Loki verified in Grafana |
+| CloudTrail multi-region trail with log file validation | 🔲 | Per ADR-027 — dedicated S3 log bucket (SSE-KMS), validation enabled. Maps to CIS AWS Foundations 3.x; HIPAA §164.312(b). Added 2026-05-08 |
+| AWS Config recorder + delivery channel | 🔲 | Per ADR-027 — region-scoped recorder, S3 delivery bucket. Added 2026-05-08 |
+| AWS Config conformance pack — Operational Best Practices for HIPAA Security | 🔲 | Per ADR-027 — `aws_config_conformance_pack` resource using AWS-managed HIPAA template. Surfaces compliance scores; ongoing per-evaluation cost (small). Added 2026-05-08 |
+| IAM Access Analyzer — account-level analyzer | 🔲 | Per ADR-027 — surfaces unintended external access. Added 2026-05-08 |
+| KMS CMK for state bucket + Config delivery + CloudTrail logs | 🔲 | Per ADR-027 — replaces SSE-S3 on compliance-scoped buckets; key rotation enabled. Added 2026-05-08 |
+| `default_tags` block applied in all AWS environments | 🔲 | Per ADR-027 — `owner`, `env`, `data-classification`, `compliance-scope`. Same set enforced by M5 policy gate. Added 2026-05-08 |
 
 ---
 
@@ -476,6 +503,10 @@ Recommended node assignments. Adjust based on resource availability at build tim
 | Repo walkable live in interview | 🔲 | |
 | Tempo trace from reliability drill | 🔲 | Capture an end-to-end trace from one drill scenario (e.g. service-down → alert → triage); export from Tempo as a portfolio artifact |
 | Cost-anomaly alert exercised in a drill | 🔲 | Synthetic AWS spend spike (or simulated anomaly event) verifies the SNS → webhook → Alertmanager path end-to-end |
+| Compliance audit drill — extends Scenario 8 | 🔲 | Per ADR-027 — `baseline.yml` check-mode run (CIS-annotated) + AWS Config conformance pack score capture + CloudTrail log integrity verification. Produces evidence artifact referenced from `control-map.md`. Added 2026-05-08 |
+| `docs/compliance/_index.md` written | 🔲 | Per ADR-027 — MOC for `docs/compliance/` directory. Added 2026-05-08 |
+| `docs/compliance/control-map.md` written | 🔲 | Per ADR-027 — HIPAA §164.308/.312/.314 + SOC 2 CC6/7/8 + HITRUST CSF cross-refs → implementation rows; references both platform-lab and `cloud-resume/docs/SECURITY.md`. Added 2026-05-08 |
+| `docs/compliance/threat-model.md` written | 🔲 | Per ADR-027 — STRIDE per-component for homelab data plane (Pi-hole DNS, PBS chain, Vaultwarden, Ollama). One page. Added 2026-05-08 |
 
 ---
 

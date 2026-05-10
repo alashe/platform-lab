@@ -487,3 +487,48 @@ A third compute node added to the cluster — providing dedicated headroom for a
 
 **Sequencing:**
 Vaultwarden is delivered as M11, after AWS mirror (M10) and before reliability drills (M12) so the drill rotation can include a Vaultwarden-down scenario with real consequence. The capstone (M13) treats Vaultwarden as a triage target alongside platform alerts.
+
+---
+
+## ADR-027 — Compliance posture scope: SOC 2 + HIPAA + HITRUST
+
+**Decision:** Map existing and planned platform controls against SOC 2 Trust Services Criteria, HIPAA Security Rule, and HITRUST CSF. Implement controls where free or low-cost — AWS-managed services, OS-level hardening, IaC-enforceable policy. Treat licensed tooling (HITRUST MyCSF, SOC 2 evidence-collection platforms like Vanta or Drata) as narrative-only, outside repo scope. Implementation extends across both the `platform-lab` repo (homelab + AWS mirror) and the `cloud-resume` repo (CRC serverless stack); the control-map artifact in `platform-lab/docs/compliance/control-map.md` is the cross-repo source of truth.
+
+**Reasoning:**
+The platform is a learning + portfolio artifact targeting cloud-platform-engineering roles in healthcare-adjacent shops. SOC 2 and HIPAA appear in nearly every JD in that segment; HITRUST is a healthcare-specific differentiator that meaningfully strengthens positioning. Without a deliberate compliance posture, the platform demonstrates *infrastructure* but not *controls* — and "I've shipped HIPAA-aligned infra" is materially stronger than "I've shipped infra" for the target role class.
+
+The posture is honest about scope. It implements technical controls a single operator can build and verify (CIS-baseline OS hardening, encryption-at-rest, audit logging, IAM least-privilege, drift detection, conformance pack) while documenting but not faking organizational controls (HR onboarding, vendor management, incident-response committees) that require an organization rather than a homelab. The artifact is a *control map*, not a SOC 2 attestation.
+
+**Implementation surfaces:**
+
+| Surface | Where | What |
+|---|---|---|
+| OS layer | `platform-lab/docs/architecture/hardening-baseline.md` (M0 retro) | CIS Debian 12/13 Benchmark IDs annotated against existing rows. Documentation-only — no role-logic change. |
+| AWS layer (homelab mirror) | `platform-lab/terraform/environments/aws-dev/` (M10) | CloudTrail multi-region trail, AWS Config recorder, HIPAA conformance pack, Access Analyzer, KMS CMKs, `default_tags`. |
+| AWS layer (CRC) | `cloud-resume/terraform/bootstrap/` + `frontend/terraform/` + `backend/terraform/` | Equivalent AWS controls scoped to the serverless stack — see `cloud-resume/docs/SECURITY.md` for CRC scope sheet. |
+| CI/CD | `platform-lab/.github/workflows/` (M5) | Scheduled `terraform plan` drift detection; policy gate (`tflint` or `checkov`) on PRs; required-tag enforcement. |
+| Operational | `platform-lab/docs/compliance/` (M12) | Compliance audit drill (extends Scenario 8); cross-repo control-map; STRIDE threat model. |
+
+**Tag set:**
+`owner`, `env`, `data-classification`, `compliance-scope`. Enforced via `default_tags` provider blocks in every AWS environment and via policy gate (`checkov` rule) on PR.
+
+**Out of scope:**
+- HITRUST MyCSF tooling — licensed, organizational scope
+- SOC 2 evidence-collection automation (Vanta, Drata, etc.) — narrative reference only
+- Penetration testing / external auditor engagement
+- Organizational controls — HR onboarding, vendor management, incident-response committees
+- VPC flow logs in CRC — no production VPC in the serverless stack; revisit at M10 for the homelab mirror
+
+**Companion vault notes:**
+- `1 Projects/CloudOps/compliance-posture.md` — thread tracker
+- `1 Projects/Engineering Portfolio/case-structure.md` — evidence-asset row (healthcare-AI moat enrichment)
+- `1 Projects/devops-learning-roadmap.md` — cross-cutting section
+- `1 Projects/Cloud Resume Challenge/cloud-resume-challenge.md` — CRC-side compliance scope section
+
+**Rejected:**
+- **Adopt a compliance scanner SaaS (Wiz, Prisma Cloud, etc.)** — out of budget; demonstrates tool usage rather than control authorship.
+- **Skip compliance posture entirely** — leaves a known gap on every healthcare-segment JD; the differentiator value of the homelab drops materially without it.
+- **Implement a single framework only (SOC 2 alone)** — HIPAA is non-negotiable for healthcare-adjacent positioning; SOC 2 + HIPAA together is the minimum viable map. HITRUST is added as a low-marginal-cost cross-reference layer.
+- **Treat compliance as a single dedicated milestone block** — the work is genuinely cross-cutting across M0/M5/M10/M12 and across two repos. A single-block milestone would force artificial sequencing and obscure the thread structure.
+
+**Revisit when:** A compliance-relevant role is accepted and the new employer's framework requirements override the chosen scope; or when the platform takes on a real consumer dataset that triggers actual regulatory scope.
