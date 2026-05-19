@@ -450,6 +450,8 @@ Recommended node assignments. Adjust based on resource availability at build tim
 
 **Objective:** Deploy and operate Vaultwarden as the platform's first user-facing consumer workload. Establish the operational pattern for app-layer services — internal TLS, SLO definition, monitoring integration, backup coverage, restore drill, runbook. Vaultwarden is the sole consumer workload until a third compute node is added (see ADR-026).
 
+> **TODO (added 2026-05-17):** `pve03` (third compute node, OptiPlex 7000 Micro DDR4) ordered 2026-05-10 — see [pve03-acquisition.md](../operations/pve03-acquisition.md). When pve03 joins the cluster, the M11 `app01` placement decision changes: deploy directly on pve03 vs. deploy on pve01 then live-migrate. ADR-026 also becomes amendable. Defer the full M11 reframe until pve03 is on-site.
+
 | Item | Status | Notes |
 |---|---|---|
 | `app01` provisioned via Terraform on pve01 | 🔲 | VM 105 · IP `192.168.0.65` · uses `proxmox_vm` module |
