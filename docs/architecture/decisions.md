@@ -492,7 +492,7 @@ Vaultwarden is delivered as M11, after AWS mirror (M10) and before reliability d
 
 ## ADR-027 — Compliance posture scope: SOC 2 + HIPAA + HITRUST
 
-**Decision:** Map existing and planned platform controls against SOC 2 Trust Services Criteria, HIPAA Security Rule, and HITRUST CSF. Implement controls where free or low-cost — AWS-managed services, OS-level hardening, IaC-enforceable policy. Treat licensed tooling (HITRUST MyCSF, SOC 2 evidence-collection platforms like Vanta or Drata) as narrative-only, outside repo scope. Implementation extends across both the `platform-lab` repo (homelab + AWS mirror) and the `cloud-resume` repo (CRC serverless stack); the control-map artifact in `platform-lab/docs/compliance/control-map.md` is the cross-repo source of truth.
+**Decision:** Map existing and planned platform controls against SOC 2 Trust Services Criteria, HIPAA Security Rule, and HITRUST CSF. Implement controls where free or low-cost — AWS-managed services, OS-level hardening, IaC-enforceable policy. The OS-hardening target is the **CIS Debian Linux 13 Benchmark v1.0.0, Server profile, Level 1** as the enforced baseline; Docker hosts map to the **CIS Docker Benchmark** and the AWS mirror (M10) to the **CIS AWS Foundations Benchmark**. Treat licensed tooling (HITRUST MyCSF, SOC 2 evidence-collection platforms like Vanta or Drata) as narrative-only, outside repo scope. Implementation extends across both the `platform-lab` repo (homelab + AWS mirror) and the `cloud-resume` repo (CRC serverless stack); the control-map artifact in `platform-lab/docs/compliance/control-map.md` is the cross-repo source of truth.
 
 **Reasoning:**
 The platform is a learning + portfolio artifact targeting cloud-platform-engineering roles in healthcare-adjacent shops. SOC 2 and HIPAA appear in nearly every JD in that segment; HITRUST is a healthcare-specific differentiator that meaningfully strengthens positioning. Without a deliberate compliance posture, the platform demonstrates *infrastructure* but not *controls* — and "I've shipped HIPAA-aligned infra" is materially stronger than "I've shipped infra" for the target role class.
@@ -503,7 +503,9 @@ The posture is honest about scope. It implements technical controls a single ope
 
 | Surface | Where | What |
 |---|---|---|
-| OS layer | `platform-lab/docs/architecture/hardening-baseline.md` (M0 retro) | CIS Debian 12/13 Benchmark IDs annotated against existing rows. Documentation-only — no role-logic change. |
+| OS layer | `platform-lab/docs/architecture/hardening-baseline.md` (M0 retro) | CIS Debian Linux 13 Benchmark v1.0.0 IDs (Server profile — Level 1 enforced) annotated against existing rows. Proxmox hosts inherit the Debian benchmark (no CIS PVE benchmark exists). Documentation-only — no role-logic change. |
+| Container layer | Docker hosts (`util01`, `mon01`, `auto01`, `qdev01`, `aws-web01`) | CIS Docker Benchmark IDs annotated against the Docker Hosts rows in `hardening-baseline.md`. Documentation-only. |
+| AWS Foundations | `platform-lab/terraform/environments/aws-dev/` (M10) | CIS AWS Foundations Benchmark IDs mapped against the AWS-layer controls in the row below. |
 | AWS layer (homelab mirror) | `platform-lab/terraform/environments/aws-dev/` (M10) | CloudTrail multi-region trail, AWS Config recorder, HIPAA conformance pack, Access Analyzer, KMS CMKs, `default_tags`. |
 | AWS layer (CRC) | `cloud-resume/terraform/bootstrap/` + `frontend/terraform/` + `backend/terraform/` | Equivalent AWS controls scoped to the serverless stack — see `cloud-resume/docs/SECURITY.md` for CRC scope sheet. |
 | CI/CD | `platform-lab/.github/workflows/` (M5) | Scheduled `terraform plan` drift detection; policy gate (`tflint` or `checkov`) on PRs; required-tag enforcement. |
@@ -513,6 +515,7 @@ The posture is honest about scope. It implements technical controls a single ope
 `owner`, `env`, `data-classification`, `compliance-scope`. Enforced via `default_tags` provider blocks in every AWS environment and via policy gate (`checkov` rule) on PR.
 
 **Out of scope:**
+- Full CIS Level 2 conformance — separate partition layout (`/var`, `/tmp`, `/home` with `nodev,nosuid,noexec`), complete `auditd` rule sets, and MAC enforce mode generate noise that does not pay off for a single operator and can fight Proxmox/Docker defaults. Adopt Level 2 controls selectively where cheap and demo-worthy, not wholesale.
 - HITRUST MyCSF tooling — licensed, organizational scope
 - SOC 2 evidence-collection automation (Vanta, Drata, etc.) — narrative reference only
 - Penetration testing / external auditor engagement
